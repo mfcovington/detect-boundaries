@@ -13,64 +13,62 @@ use Data::Printer;
 use List::Util qw(min max);
 
 # get rid of lonely snps
-# my $file = $ARGV[0];
-my $file = 'original/RIL_1.12.A02.genotyped';
+my $id              = shift;
+my @genotyped_files = @ARGV;
 
 my $par1_id = "R500";
 my $par2_id = "IMB211";
 
 my $min_cov      = 3;
 my $min_momentum = 5;
-
-open my $snp_fh, "<", $file;
+my $min_ratio    = 0.9;
 
 my %snps;
-my @recent;
-my $momentum = $min_momentum;
-my $count;
-my $last_parent = '';
-my $monitor     = 1;
-while (<$snp_fh>) {
-    my ( $chr, $pos, $par1, $par2, $tot ) = split /\t/;
-    next if $par1 && $par2;
-    next if $par1 + $par2 < $min_cov;
+for my $file (@genotyped_files) {
+    my @recent;
+    my $momentum    = $min_momentum;
+    my $last_parent = '';
+    my $monitor     = 1;
+    my $chr;
 
-    my $cur_parent = $par1 > $par2 ? $par1_id : $par2_id;
+    open my $snp_fh, "<", $file;
+    while (<$snp_fh>) {
+        ( $chr, my ( $pos, $par1, $par2, $tot ) ) = split /\t/;
+        next if $par1 + $par2 < $min_cov;
+        next if max( $par1, $par2 ) / ( $par1 + $par2 ) < $min_ratio;
 
-    $snps{$pos} = {
-        chr    => $chr,
-        score  => max( $par1, $par2),
-        par_id => $cur_parent
-    };
-    # $snps{$pos} = $cur_parent;
+        my $cur_parent = $par1 > $par2 ? $par1_id : $par2_id;
 
-    if ( $cur_parent ne $last_parent ) {
-        if ( $momentum < $min_momentum ) {
-            delete $snps{$_} for @recent;
-            @recent = ();
+        $snps{$chr}{$pos} = {
+            score  => max( $par1, $par2 ),
+            par_id => $cur_parent
+        };
+
+        if ( $cur_parent ne $last_parent ) {
+            if ( $momentum < $min_momentum ) {
+                delete $snps{$chr}{$_} for @recent;
+                @recent = ();
+            }
+            $momentum = 0;
         }
-        $momentum = 0;
-    }
-    else {
-        $momentum++; # = min( $min_momentum, ++$momentum );
-        # $momentum = min( $min_momentum, ++$momentum );
-    }
-    push @recent, $pos;
-    @recent = () if $momentum >= $min_momentum;
-    # @recent = () if $momentum == $min_momentum;
-    say "$pos:$cur_parent:$momentum";
-    $last_parent = $cur_parent;
-    $count++;
-}
-close $snp_fh;
-delete $snps{$_} for @recent;
+        else {
+            $momentum++;
+        }
 
-# p %snps;
-say scalar keys %snps;
-say $count;
-
-open my $out_fh, ">", "snps.out";
-for ( sort { $a <=> $b } keys %snps ) {
-    say $out_fh join "\t", $snps{$_}{chr}, $_, $snps{$_}{score}, $snps{$_}{par_id};
+        push @recent, $pos;
+        @recent = () if $momentum >= $min_momentum;
+        $last_parent = $cur_parent;
+    }
+    close $snp_fh;
+    delete $snps{$chr}{$_} for @recent;
 }
-close $out_fh;
+
+for my $chr ( sort keys %snps ) {
+    open my $out_fh, ">", "$id.$chr.filtered.snps";
+    for my $pos ( sort { $a <=> $b } keys $snps{$chr} ) {
+        my $score  = $snps{$chr}{$pos}{score};
+        my $par_id = $snps{$chr}{$pos}{par_id};
+        say $out_fh join "\t", $chr, $pos, $score, $par_id;
+    }
+    close $out_fh;
+}
