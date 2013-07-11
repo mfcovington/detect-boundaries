@@ -22,6 +22,7 @@ snps.df$score[snps.df$par == par2_id] <-  snps.df$cov[snps.df$par == par2_id]
 # qplot(pos, score, data = snps.df, geom = 'area')
 
 snps.df$binary[snps.df$par == par1_id] <- -1
+snps.df$binary[snps.df$par == 'HET']   <- 0
 snps.df$binary[snps.df$par == par2_id] <- 1
 # qplot(pos, binary, data = snps.df, geom = 'line')
 # qplot(pos, binary, data = snps.df, geom = 'area')
