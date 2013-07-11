@@ -77,12 +77,30 @@ for my $file (@genotyped_files) {
     delete $snps{$chr}{$_} for @recent;
 }
 
+open my $boundaries_out_fh, ">", "$id.boundaries";
 for my $chr ( sort keys %snps ) {
-    open my $out_fh, ">", "$id.$chr.filtered.snps";
+    my $last_parent = '';
+    my $last_pos    = 0;
+
+    open my $snp_out_fh, ">", "$id.$chr.filtered.snps";
     for my $pos ( sort { $a <=> $b } keys $snps{$chr} ) {
         my $score  = $snps{$chr}{$pos}{score};
         my $par_id = $snps{$chr}{$pos}{par_id};
-        say $out_fh join "\t", $chr, $pos, $score, $par_id;
+
+        # output snps
+        say $snp_out_fh join "\t", $chr, $pos, $score, $par_id;
+
+        # output boundaries
+        if ( $last_parent ne $par_id ) {
+            say $boundaries_out_fh join "\t", $last_pos, $last_parent
+              unless $last_pos == 0;
+            print $boundaries_out_fh join "\t", $chr, $pos, "";
+            $last_parent = $par_id;
+        }
+        $last_pos = $pos;
     }
-    close $out_fh;
+    say $boundaries_out_fh join "\t", $last_pos, $last_parent;
+
+    close $snp_out_fh;
 }
+close $boundaries_out_fh;
