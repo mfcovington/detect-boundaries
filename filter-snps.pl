@@ -22,7 +22,7 @@ my $par2_id = "IMB211";
 my $min_cov      = 10;
 my $min_momentum = 10;
 my $min_ratio    = 0.9;
-my $het_offset   = 0.1;
+my $het_offset   = 0.2;
 
 my $het_max = min( $min_ratio, 0.5 + $het_offset );
 
