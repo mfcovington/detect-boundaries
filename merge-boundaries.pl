@@ -16,6 +16,8 @@ use Data::Printer;
 
 my @boundary_files = @ARGV; # || qw(sample-file/RIL_300.boundaries sample-file/RIL_300.boundaries);
 
+# TODO: Extract chromosome lengths from bam file
+# TODO: GetOptions: Which chromosomes we want to use (if a subset of .bam header)
 my %chr_lengths = (
     A01 => 28608137,
     A02 => 27848129,
@@ -67,6 +69,8 @@ for my $chr (@chromosomes) {
 p %borders;
 p %bins;
 
+# TODO: Output min/max/mean border/bin size
+# TODO: Write bin boundaries to file
 say "BORDER SIZES:";
 for my $chr (@chromosomes) {
     say "# of borders in $chr: " . scalar keys $borders{$chr};
