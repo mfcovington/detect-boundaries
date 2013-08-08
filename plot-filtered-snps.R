@@ -29,5 +29,17 @@ snps.df$binary[snps.df$par == par2_id] <- 1
 
 
 # ggplot(snps.df, aes(x = pos, y = score)) + facet_grid(chr ~ .) + geom_area()
-ggplot(snps.df, aes(x = pos, y = binary)) + facet_grid(chr ~ .) + geom_area(color = 'blue', fill = 'orange')
+boundary.plot <- ggplot(snps.df, aes(x = pos, y = binary)) +
+                   facet_grid(chr ~ .) +
+                   geom_area(color = 'blue', fill = 'orange')
 # ggplot(snps.df, aes(x = pos, y = binary)) + facet_grid(chr ~ .) + geom_line()
+
+# ggsave(filename = paste(id, "png", sep = "."),
+#        plot     = boundary.plot,
+#        width    = 10,
+#        height   = 8)
+
+ggsave(filename = paste(id, "png", sep = "."),
+       plot     = boundary.plot,
+       width    = 10,
+       height   = 8)
