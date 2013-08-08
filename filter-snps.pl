@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# FILE_NAME.pl
+# filter-snps.pl
 # Mike Covington
 # created: 2013-06-28
 #
@@ -27,15 +27,15 @@ my $het_offset   = 0.2;
 my $het_max = min( $min_ratio, 0.5 + $het_offset );
 
 my %snps;
-for my $file (@genotyped_files) {
+for my $geno_file (@genotyped_files) {
     my @recent;
     my $momentum    = $min_momentum;
     my $last_parent = '';
     my $monitor     = 1;
     my $chr;
 
-    open my $snp_fh, "<", $file;
-    while (<$snp_fh>) {
+    open my $geno_fh, "<", $geno_file;
+    while (<$geno_fh>) {
         ( $chr, my ( $pos, $par1, $par2, $tot ) ) = split /\t/;
         next if $par1 + $par2 < $min_cov;
 
@@ -73,7 +73,7 @@ for my $file (@genotyped_files) {
         @recent = () if $momentum >= $min_momentum;
         $last_parent = $cur_parent;
     }
-    close $snp_fh;
+    close $geno_fh;
     delete $snps{$chr}{$_} for @recent;
 }
 

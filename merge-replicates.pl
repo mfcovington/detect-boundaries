@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# FILE_NAME.pl
+# merge-replicates.pl
 # Mike Covington
 # created: 2013-06-30
 #
