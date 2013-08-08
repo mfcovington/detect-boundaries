@@ -10,6 +10,7 @@ use warnings;
 use autodie;
 use feature 'say';
 use Number::RangeTracker;
+use List::Util qw(min max sum);
 use Data::Printer;
 
 my @boundary_files = @ARGV; # || qw(sample-file/RIL_300.boundaries sample-file/RIL_300.boundaries);
@@ -64,30 +65,38 @@ for my $chr (@chromosomes) {
 p %borders;
 p %bins;
 
-# TODO: Output min/max/mean border/bin size
 # TODO: Write bin boundaries to file
 say "BORDER SIZES:";
 for my $chr (@chromosomes) {
-    say "# of borders in $chr: " . scalar keys $borders{$chr};
+    my @lengths;
     for my $start ( sort { $a <=> $b } keys %{$borders{$chr}} ) {
-            say "\t"  . $borders{$chr}->{$start} - $start + 1;
+        push @lengths, $borders{$chr}->{$start} - $start + 1;
     }
+    summarize_ranges( $chr, \@lengths );
 }
 
 say "BIN SIZES:";
 for my $chr (@chromosomes) {
-    say "# of bins in $chr: " . scalar keys $bins{$chr};
+    my @lengths;
     for my $start ( sort { $a <=> $b } keys %{$bins{$chr}} ) {
-            say "\t"  . $bins{$chr}->{$start} - $start + 1;
+        push @lengths, $bins{$chr}->{$start} - $start + 1;
     }
+    summarize_ranges( $chr, \@lengths );
 }
 
+sub summarize_ranges {
+    my ( $chr, $lengths_ref ) = @_;
 
+    my $count = @$lengths_ref;
+    my $min   = min @$lengths_ref;
+    my $mean  = sprintf( '%.0f', sum(@$lengths_ref) / $count );
+    my $max   = max @$lengths_ref;
 
-
-
-
-
-
+    say "$chr";
+    say "  bins: $count";
+    say "  min:  $min";
+    say "  mean: $mean";
+    say "  max:  $max";
+}
 
 exit;
