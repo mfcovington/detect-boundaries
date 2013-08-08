@@ -22,11 +22,24 @@ snps.df$score[snps.df$par == par2_id] <-  snps.df$cov[snps.df$par == par2_id]
 # qplot(pos, score, data = snps.df, geom = 'area')
 
 snps.df$binary[snps.df$par == par1_id] <- -1
+snps.df$binary[snps.df$par == 'HET']   <- 0
 snps.df$binary[snps.df$par == par2_id] <- 1
 # qplot(pos, binary, data = snps.df, geom = 'line')
 # qplot(pos, binary, data = snps.df, geom = 'area')
 
 
 # ggplot(snps.df, aes(x = pos, y = score)) + facet_grid(chr ~ .) + geom_area()
-ggplot(snps.df, aes(x = pos, y = binary)) + facet_grid(chr ~ .) + geom_area(color = 'blue', fill = 'orange')
+boundary.plot <- ggplot(snps.df, aes(x = pos, y = binary)) +
+                   facet_grid(chr ~ .) +
+                   geom_area(color = 'blue', fill = 'orange')
 # ggplot(snps.df, aes(x = pos, y = binary)) + facet_grid(chr ~ .) + geom_line()
+
+# ggsave(filename = paste(id, "png", sep = "."),
+#        plot     = boundary.plot,
+#        width    = 10,
+#        height   = 8)
+
+ggsave(filename = paste(id, "png", sep = "."),
+       plot     = boundary.plot,
+       width    = 10,
+       height   = 8)
