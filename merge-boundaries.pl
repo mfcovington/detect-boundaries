@@ -9,9 +9,6 @@ use strict;
 use warnings;
 use autodie;
 use feature 'say';
-
-use lib "/Users/mfc/git.repos/ranges/lib";
-
 use Number::RangeTracker;
 use Data::Printer;
 
