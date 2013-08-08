@@ -1,11 +1,30 @@
-setwd("/Users/mfc/git.repos/detect-boundaries")
+#!/usr/bin/env Rscript --vanilla
+
+args <- commandArgs(trailingOnly = TRUE)
+
+id <- args[1]
+
+if (!exists("args[1]"))
+  stop("No Sample ID provided!")
+
+if (exists("args[2]")) {
+  par1_id <- args[2]
+} else {
+  par1_id <- 'R500'
+}
+
+if (exists("args[3]")) {
+  par2_id <- args[3]
+} else {
+  par2_id <- 'IMB211'
+}
+
+print("running")
+
+# setwd("/Users/mfc/git.repos/detect-boundaries")
 library(ggplot2)
 
-id <- 'RIL_41'
-
 snps.files <- list.files(pattern = paste0(id, ".*snps"))
-par1_id <- 'R500'
-par2_id <- 'IMB211'
 
 snps.df <- data.frame(chr = character(0), pos = integer(0), cov = integer(0), par = character(0))
 
@@ -38,7 +57,7 @@ boundary.plot <- ggplot(snps.df, aes(x = pos, y = binary)) +
 #        plot     = boundary.plot,
 #        width    = 10,
 #        height   = 8)
-
+print("saving")
 ggsave(filename = paste(id, "png", sep = "."),
        plot     = boundary.plot,
        width    = 10,
