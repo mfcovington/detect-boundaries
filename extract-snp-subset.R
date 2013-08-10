@@ -1,28 +1,58 @@
 
 
 
-vcf.dir <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/"
-vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "merged.*.EC50.minflter.vcf.summary"))
-snps <- read.table(c(vcf.summary.files), header = TRUE, sep = "\t", as.is = TRUE)[c(1:3, 11)]
-snps <- snps[snps$filter == '.', 2:4]
-
-
-
 read.multi.tables <- function(file.names, ...) {
     require(plyr)
     ldply(file.names, function(fn) data.frame(filename = fn, read.table(fn, ...)))
 }
 
-snps.multi <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
-snps.multi <- snps.multi[snps.multi$filter == '.', 2:4]
-
-
-vcf.summary <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/merged.A01.EC50.minflter.vcf.summary"
-snps <- read.table(vcf.summary, header = TRUE, sep = "\t", as.is = TRUE)[c(1:3, 11)]
+vcf.dir <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/"
+vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "merged.*.EC50.minflter.vcf.summary"))
+snps <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
 snps <- snps[snps$filter == '.', 2:4]
 
 bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
+
+####### MIDDLES ######
+
+get.mid.max <- function(region) {
+  max.pos <- region$pos[region$observed_ratio == max(region$observed_ratio)]
+  max.length <- length(max.pos)
+  if (max.length == 1) {
+    max.mid <- max.pos
+  } else {
+    max.mid <- max.pos[round(max.length / 2)]
+  }
+  max.mid
+}
+
+# bin.sizes <- 0
+bin.size.min <- 50
+for (i in 1:nrow(bins)) {
+# for (i in 1:100) {
+  chr    <- bins$chr[i]
+  start  <- bins$start[i]
+  end    <- bins$end[i]
+
+  # ignore small bins
+  bin.size <- end - start + 1
+  # bin.sizes[i] <- bin.size
+  if (bin.size == 1) {
+    bins$snp.mid[i] <- NA
+    next
+  }
+
+  # extract observed ratio data for bin
+  region <- snps[snps$chr == chr & snps$pos >= start & snps$pos <= end, ]
+
+  max.mid <- get.mid.max(region)
+  bins$snp.mid[i] <- max.mid
+}
+write.table(bins, file = "bins-snp.mid", quote = FALSE, sep = "\t", row.names = FALSE)
+
+
+####### FLANKS ######
 chr    <- bins$chr[1]
 start  <- bins$start[1]
 end    <- bins$end[1]
@@ -101,39 +131,6 @@ if (!exists("good"))
   good <- (region[region$pos <= left_flank & region$observed_ratio == 2, ])[1, 2]
 if (is.na(good$pos))
   print("sorry")
-
-
-get.mid.max <- function(region) {
-  max.pos <- region$pos[region$observed_ratio == max(region$observed_ratio)]
-  max.length <- length(max.pos)
-  if (max.length == 1) {
-    max.mid <- max.pos
-  } else {
-    max.mid <- max.pos[round(max.length / 2)]
-  }
-  max.mid
-}
-
-system.time(
-  for (i in 1:nrow(bins)) {
-  # for (i in 1:100) {
-    chr    <- bins$chr[i]
-    start  <- bins$start[i]
-    end    <- bins$end[i]
-  print(i)
-    # extract observed ratio data for bin
-    region <- snps[snps$chr == chr & snps$pos >= start & snps$pos <= end, ]
-
-    max.mid <- get.mid.max(region)
-    # print(bins[i, ])
-    # print(max.mid)
-    # print(snps[snps$pos == max.mid, ])
-    bins$max.mid[i] <- max.mid
-  }
-)
-
-
-
 
 
 
