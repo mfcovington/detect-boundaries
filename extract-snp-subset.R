@@ -1,6 +1,21 @@
 
 
 
+vcf.dir <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/"
+vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "merged.*.EC50.minflter.vcf.summary"))
+snps <- read.table(c(vcf.summary.files), header = TRUE, sep = "\t", as.is = TRUE)[c(1:3, 11)]
+snps <- snps[snps$filter == '.', 2:4]
+
+
+
+read.multi.tables <- function(file.names, ...) {
+    require(plyr)
+    ldply(file.names, function(fn) data.frame(filename = fn, read.table(fn, ...)))
+}
+
+snps.multi <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
+snps.multi <- snps.multi[snps.multi$filter == '.', 2:4]
+
 
 vcf.summary <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/merged.A01.EC50.minflter.vcf.summary"
 snps <- read.table(vcf.summary, header = TRUE, sep = "\t", as.is = TRUE)[c(1:3, 11)]
