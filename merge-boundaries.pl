@@ -76,13 +76,18 @@ for my $chr (@chromosomes) {
 }
 
 say "BIN SIZES:";
+open my $bin_fh, ">", "bins.tsv";
+say $bin_fh join "\t", "chr", "start", "end";
 for my $chr (@chromosomes) {
     my @lengths;
     for my $start ( sort { $a <=> $b } keys %{$bins{$chr}} ) {
-        push @lengths, $bins{$chr}->{$start} - $start + 1;
+        my $end = $bins{$chr}->{$start};
+        push @lengths, $end - $start + 1;
+        say $bin_fh join "\t", $chr, $start, $end;
     }
     summarize_ranges( $chr, \@lengths );
 }
+close $bin_fh;
 
 sub summarize_ranges {
     my ( $chr, $lengths_ref ) = @_;
