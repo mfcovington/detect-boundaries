@@ -18,11 +18,16 @@ bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
 get.mid.max <- function(region) {
   max.pos <- region$pos[region$observed_ratio == max(region$observed_ratio)]
-  max.length <- length(max.pos)
-  if (max.length == 1) {
+  max.count <- length(max.pos)
+  if (max.count == 1) {
     max.mid <- max.pos
   } else {
-    max.mid <- max.pos[round(max.length / 2)]
+    mid   <- round(sum(range(region$pos)) / 2)
+    diffs <- max.pos - mid
+
+    min.diff.idx <- which.min(abs(diffs))
+
+    max.mid <- mid + diffs[min.diff.idx]
   }
   max.mid
 }
