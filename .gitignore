@@ -1,0 +1,9 @@
+polyDB.*
+*.filtered.snps
+*.genotyped
+*.genotyped.merged
+*.boundaries
+*.png
+*.pdf
+.Rapp.history
+snps.out
