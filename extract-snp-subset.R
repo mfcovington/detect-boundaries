@@ -13,6 +13,8 @@ obs.rat <- obs.rat[obs.rat$filter == '.', 2:4]
 
 bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
+polydb.files <- list.files("./", "polyDB.*")
+snps <- read.multi.tables(polydb.files, header = TRUE, sep = "\t", as.is = TRUE)[2:3]
 
 ####### MIDDLES ######
 
@@ -51,6 +53,8 @@ for (i in 1:nrow(bins)) {
   # extract observed ratio data for bin
   region <- obs.rat[obs.rat$chr == chr & obs.rat$pos >= start & obs.rat$pos <= end, ]
 
+  # ignore positions absent from polyDB files (i.e. insufficient coverage in parent)
+  region$observed_ratio[!paste(region[, 1], region[, 2], sep = ':') %in% paste(snps[, 1], snps[, 2], sep = ':')] <- 0
   max.mid <- get.mid.max(region)
   bins$snp.mid[i] <- max.mid
 }
