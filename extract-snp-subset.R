@@ -35,7 +35,7 @@ get.mid.max <- function(region) {
 }
 
 # bin.sizes <- 0
-bin.size.min <- 50
+bin.size.min <- 1000
 for (i in 1:nrow(bins)) {
 # for (i in 1:100) {
   chr    <- bins$chr[i]
@@ -45,7 +45,7 @@ for (i in 1:nrow(bins)) {
   # ignore small bins
   bin.size <- end - start + 1
   # bin.sizes[i] <- bin.size
-  if (bin.size == 1) {
+  if (bin.size < bin.size.min) {
     bins$snp.mid[i] <- NA
     next
   }
@@ -58,7 +58,8 @@ for (i in 1:nrow(bins)) {
   max.mid <- get.mid.max(region)
   bins$snp.mid[i] <- max.mid
 }
-write.table(bins, file = "bins-snp.mid", quote = FALSE, sep = "\t", row.names = FALSE)
+bins.mid.file <- paste0("bins-snp.mid-min", bin.size.min)
+write.table(bins, file = bins.mid.file, quote = FALSE, sep = "\t", row.names = FALSE)
 
 
 ####### FLANKS ######

@@ -15,7 +15,7 @@ my $par1_id   = "R500";
 my $par2_id   = "IMB211";
 my $min_ratio = 0.8;
 
-open my $bins_fh, "<", "sample-file/bins-snp.mid";
+open my $bins_fh, "<", "sample-file/bins-snp.mid-min1000";
 <$bins_fh>;
 my %mids;
 while (<$bins_fh>) {
