@@ -8,8 +8,8 @@ read.multi.tables <- function(file.names, ...) {
 
 vcf.dir <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/"
 vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "merged.*.EC50.minflter.vcf.summary"))
-snps <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
-snps <- snps[snps$filter == '.', 2:4]
+obs.rat <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
+obs.rat <- obs.rat[obs.rat$filter == '.', 2:4]
 
 bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
@@ -49,7 +49,7 @@ for (i in 1:nrow(bins)) {
   }
 
   # extract observed ratio data for bin
-  region <- snps[snps$chr == chr & snps$pos >= start & snps$pos <= end, ]
+  region <- obs.rat[obs.rat$chr == chr & obs.rat$pos >= start & obs.rat$pos <= end, ]
 
   max.mid <- get.mid.max(region)
   bins$snp.mid[i] <- max.mid
@@ -64,7 +64,7 @@ end    <- bins$end[1]
 length <- end - start + 1
 
 # extract observed ratio data for bin
-region <- snps[snps$chr == chr & snps$pos >= start & snps$pos <= end, ]
+region <- obs.rat[obs.rat$chr == chr & obs.rat$pos >= start & obs.rat$pos <= end, ]
 
 
 left  <- region$pos[1]
