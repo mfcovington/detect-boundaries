@@ -9,11 +9,6 @@ use strict;
 use warnings;
 use autodie;
 use feature 'say';
-use List::Util 'max';
-
-my $par1_id   = "R500";
-my $par2_id   = "IMB211";
-my $min_ratio = 0.8;
 
 open my $bins_fh, "<", "sample-file/bins-snp.mid-min1000";
 <$bins_fh>;
@@ -31,25 +26,14 @@ my @ids = qw(RIL_1 RIL_103 RIL_104 RIL_113 RIL_115 RIL_12 RIL_123 RIL_124 RIL_13
 my @chromosomes = qw(A01 A02 A03 A04 A05 A06 A07 A08 A09 A10);
 for my $id (@ids) {
     for my $chr (@chromosomes) {
-        my $geno_file = "sample-file/$id.$chr.genotyped";
+        open my $snps_fh, "<", "sample-file/$id.$chr.filtered.snps";
         my %snps;
-
-        open my $geno_fh, "<", $geno_file;
-        while (<$geno_fh>) {
-            my ( $pos, $par1, $par2 ) = (split)[ 1 .. 3 ];
-
-            my $ratio;
-            my $total = $par1 + $par2;
-            if ( $total > 0 ) { $ratio = max( $par1, $par2 ) / $total }
-            else              { $ratio = 0 }
-
-            my $genotype;
-            if ( $ratio < $min_ratio ) { $genotype = 'NA' }
-            else { $genotype = $par1 > $par2 ? $par1_id : $par2_id }
-
+        while (<$snps_fh>) {
+            chomp;
+            my ( $pos, $genotype ) = (split)[1, 3];
             $snps{$chr}{$pos} = $genotype;
         }
-        close $geno_fh;
+        close $snps_fh;
 
         for my $pos ( sort { $a <=> $b } keys $mids{$chr} ) {
             $mids{$chr}{$pos}{$id} = $snps{$chr}{$pos} // 'NA';
