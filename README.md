@@ -49,6 +49,7 @@ detect-boundaries:`get-genotypes-for-subset.pl`
 
 - IN:
     - `sample-file/bins-snp.mid`
+    - Genotyped files:
     - polyDB...
     - list of Sample IDs
 - OUT:
