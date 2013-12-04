@@ -28,54 +28,6 @@ my $options = GetOptions (
 my @chromosomes = split /,/, $chr_list;
 my $chr_lengths = get_chr_lengths( $bam_file, \@chromosomes );
 
-p $chr_lengths;
-
-
-
-sub get_chr_lengths {
-    my ( $bam_file, $chromosomes ) = @_;
-
-    my %chr_lengths = map { $_ => 0 } @{$chromosomes};
-    my $chr_count   = scalar @{$chromosomes};
-
-    open my $bam_head_fh, "-|", "samtools view -H $bam_file";
-    while (<$bam_head_fh>) {
-        next unless /^\@SQ/;
-
-        my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:(\d+)/;
-
-        next    # only skip 'nonexistent' chromosomes if custom list is supplied
-          if $chr_count > 0
-          && !exists $chr_lengths{$seq_id};
-
-        $chr_lengths{$seq_id} = $seq_len;
-    }
-    close $bam_head_fh;
-
-    return \%chr_lengths;
-}
-
-
-exit;
-__END__
-
-# TODO: Extract chromosome lengths from bam file
-# TODO: GetOptions: Which chromosomes we want to use (if a subset of .bam header)
-my %chr_lengths = (
-    A01 => 28608137,
-    A02 => 27848129,
-    A03 => 31716688,
-    A04 => 18967243,
-    A05 => 23941934,
-    A06 => 26273242,
-    A07 => 22587824,
-    A08 => 21596550,
-    A09 => 37123981,
-    A10 => 17595035
-);
-
-my @chromosomes = sort keys %chr_lengths;
-
 my %range;
 for my $chr (@chromosomes) {
     $range{$chr} = RangeTracker->new();
@@ -95,7 +47,7 @@ for my $file (@boundary_files) {
             $range{$chr}->add_range($end + 1, $start - 1);
             $end = $boundaries{$chr}{$start};
         }
-        $range{$chr}->add_range($end + 1, $chr_lengths{$chr});
+        $range{$chr}->add_range($end + 1, $chr_lengths->{$chr});
     }
 
 }
@@ -132,6 +84,29 @@ for my $chr (@chromosomes) {
     summarize_ranges( $chr, \@lengths );
 }
 close $bin_fh;
+
+sub get_chr_lengths {
+    my ( $bam_file, $chromosomes ) = @_;
+
+    my %chr_lengths = map { $_ => 0 } @{$chromosomes};
+    my $chr_count   = scalar @{$chromosomes};
+
+    open my $bam_head_fh, "-|", "samtools view -H $bam_file";
+    while (<$bam_head_fh>) {
+        next unless /^\@SQ/;
+
+        my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:(\d+)/;
+
+        next    # only skip 'nonexistent' chromosomes if custom list is supplied
+          if $chr_count > 0
+          && !exists $chr_lengths{$seq_id};
+
+        $chr_lengths{$seq_id} = $seq_len;
+    }
+    close $bam_head_fh;
+
+    return \%chr_lengths;
+}
 
 sub summarize_ranges {
     my ( $chr, $lengths ) = @_;
