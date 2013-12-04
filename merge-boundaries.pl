@@ -11,15 +11,22 @@ use autodie;
 use feature 'say';
 use Number::RangeTracker;
 use List::Util qw(min max sum);
+use Getopt::Long;
 use Data::Printer;
 
 my @boundary_files = @ARGV; # || qw(sample-file/RIL_300.boundaries sample-file/RIL_300.boundaries);
 
-my @chr_list = qw( A01 A02 A03 A04 A05 A06 A07 A08 A09 A10 );
-
-
+# Temporary defaults values:
+my $chr_list = "A01,A02,A03,A04,A05,A06,A07,A08,A09,A10";
 my $bam_file = "~/git.repos/sample-files/bam/IMB211.good.bam";
-my $chr_lengths = get_chr_lengths( $bam_file, \@chr_list );
+
+my $options = GetOptions (
+    "chr_list=s" => \$chr_list,
+    "bam_file=s" => \$bam_file,
+);
+
+my @chromosomes = split /,/, $chr_list;
+my $chr_lengths = get_chr_lengths( $bam_file, \@chromosomes );
 
 p $chr_lengths;
 
