@@ -29,12 +29,18 @@ sub get_chr_lengths {
     my ( $bam_file, $chr_list_ref ) = @_;
 
     my %chr_lengths = map { $_ => 0 } @{$chr_list_ref};
+    my $chr_count   = scalar @{$chr_list_ref};
 
     open my $bam_head_fh, "-|", "samtools view -H $bam_file";
     while (<$bam_head_fh>) {
         next unless /^\@SQ/;
-        next unless exists $chr_lengths{$seq_id};
+
         my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:(\d+)/;
+
+        next    # only skip 'nonexistent' chromosomes if custom list is supplied
+          if $chr_count > 0
+          && !exists $chr_lengths{$seq_id};
+
         $chr_lengths{$seq_id} = $seq_len;
     }
     close $bam_head_fh;
