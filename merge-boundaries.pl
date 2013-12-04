@@ -33,10 +33,10 @@ p $chr_lengths;
 
 
 sub get_chr_lengths {
-    my ( $bam_file, $chr_list_ref ) = @_;
+    my ( $bam_file, $chromosomes ) = @_;
 
-    my %chr_lengths = map { $_ => 0 } @{$chr_list_ref};
-    my $chr_count   = scalar @{$chr_list_ref};
+    my %chr_lengths = map { $_ => 0 } @{$chromosomes};
+    my $chr_count   = scalar @{$chromosomes};
 
     open my $bam_head_fh, "-|", "samtools view -H $bam_file";
     while (<$bam_head_fh>) {
@@ -134,12 +134,12 @@ for my $chr (@chromosomes) {
 close $bin_fh;
 
 sub summarize_ranges {
-    my ( $chr, $lengths_ref ) = @_;
+    my ( $chr, $lengths ) = @_;
 
-    my $count = @$lengths_ref;
-    my $min   = min @$lengths_ref;
-    my $mean  = sprintf( '%.0f', sum(@$lengths_ref) / $count );
-    my $max   = max @$lengths_ref;
+    my $count = @$lengths;
+    my $min   = min @$lengths;
+    my $mean  = sprintf( '%.0f', sum(@$lengths) / $count );
+    my $max   = max @$lengths;
 
     say "$chr";
     say "  bins: $count";
