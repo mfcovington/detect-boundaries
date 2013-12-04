@@ -33,9 +33,8 @@ sub get_chr_lengths {
     open my $bam_head_fh, "-|", "samtools view -H $bam_file";
     while (<$bam_head_fh>) {
         next unless /^\@SQ/;
-        chomp;
-        my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:([^\t]+)/;
         next unless exists $chr_lengths{$seq_id};
+        my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:(\d+)/;
         $chr_lengths{$seq_id} = $seq_len;
     }
     close $bam_head_fh;
