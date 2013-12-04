@@ -17,19 +17,31 @@ my @boundary_files = @ARGV; # || qw(sample-file/RIL_300.boundaries sample-file/R
 
 my @chr_list = qw( A01 A02 A03 A04 A05 A06 A07 A08 A09 A10 );
 
-my %chr_lengths = map{ $_ => 0 } @chr_list;
 
-open my $bam_head_fh, "-|", "samtools view -H ~/git.repos/sample-files/bam/IMB211.good.bam";
-while (<$bam_head_fh>) {
-    next unless /^\@SQ/;
-    chomp;
-    my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:([^\t]+)/;
-    next unless exists $chr_lengths{$seq_id};
-    $chr_lengths{$seq_id} = $seq_len;
+my $bam_file = "~/git.repos/sample-files/bam/IMB211.good.bam";
+my $chr_lengths = get_chr_lengths( $bam_file, \@chr_list );
+
+p $chr_lengths;
+
+
+
+sub get_chr_lengths {
+    my ( $bam_file, $chr_list_ref ) = @_;
+
+    my %chr_lengths = map { $_ => 0 } @{$chr_list_ref};
+
+    open my $bam_head_fh, "-|", "samtools view -H $bam_file";
+    while (<$bam_head_fh>) {
+        next unless /^\@SQ/;
+        chomp;
+        my ( $seq_id, $seq_len ) = $_ =~ m/\tSN:([^\t]+)\tLN:([^\t]+)/;
+        next unless exists $chr_lengths{$seq_id};
+        $chr_lengths{$seq_id} = $seq_len;
+    }
+    close $bam_head_fh;
+
+    return \%chr_lengths;
 }
-close $bam_head_fh;
-
-p %chr_lengths;
 
 
 exit;
