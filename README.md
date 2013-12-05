@@ -27,14 +27,25 @@ detect-boundaries:`filter-snps.pl`
     - Filtered SNP files: `RIL_300.A01.filtered.snps`, etc.
 
 
-detect-boundaries:`merge-boundaries.pl`
+### Merging Boundaries with `merge-boundaries.pl`
+
+This script takes a collection of `*.boundaries` files and merges all of the boundaries. The bins resulting from the merge are written to a file: `bins.tsv`. Boundary and bin stats (count, min size, max size, and mean size) are printed to the screen.
+
+Sample Usage:
+
+```shell
+./merge-boundaries.pl \
+  --bam_file ~/git.repos/sample-files/bam/IMB211.good.bam \
+  --chr_list A01,A02,A03,A04,A05,A06,A07,A08,A09,A10 \
+  sample-file/RIL_*.boundaries
+```
 
 - IN:
     - Boundary files: `sample-file/RIL_300.boundaries`, etc.
-    - Chromosome lengths
+    - Representative `.bam` file (for extracting chromosome lengths)
+    - (Optional) Chromosome list (for limiting analysis to a subset of sequences)
 - OUT: 
-    - `bins.tsv`
-
+    - Comprehensive list of bins and their locations: `bins.tsv`
 
 detect-boundaries:`extract-snp-subset.R`
 
