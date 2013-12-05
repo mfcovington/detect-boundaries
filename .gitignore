@@ -1,6 +1,7 @@
 polyDB.*
 *.filtered.snps
 *.genotyped
+*.genotyped.nr
 *.genotyped.merged
 *.boundaries
 *.png
