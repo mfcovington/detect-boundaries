@@ -119,10 +119,10 @@ sub summarize_ranges {
 
     my $summary = <<END_SUMMARY;
 $chr
-  bins: $count
-  min:  $min
-  mean: $mean
-  max:  $max
+  count: $count
+  min:   $min
+  mean:  $mean
+  max:   $max
 END_SUMMARY
 
     say $summary;
