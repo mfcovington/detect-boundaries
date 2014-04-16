@@ -9,22 +9,40 @@ use strict;
 use warnings;
 use autodie;
 use feature 'say';
+use Getopt::Long;
 use Data::Printer;
 use List::Util qw(min max sum);
+use File::Path 'make_path';
 
-# get rid of lonely snps
-my $id              = shift;
-my @genotyped_files = @ARGV;
-
-my $par1_id = "R500";
-my $par2_id = "IMB211";
-
+# Set defaults and get options
 my $min_cov      = 10;
 my $min_momentum = 10;
 my $min_ratio    = 0.9;
-my $het_offset   = 0.2;
+my $offset_het   = 0.2;
+my $out_dir      = "./";
+my ( $id, $par1_id, $par2_id, $help );
+my $options = GetOptions(
+    "id=s"           => \$id,
+    "par1_id=s"      => \$par1_id,
+    "par2_id=s"      => \$par2_id,
+    "min_cov=i"      => \$min_cov,
+    "min_momentum=i" => \$min_momentum,
+    "min_ratio=f"    => \$min_ratio,
+    "offset_het=f"   => \$offset_het,
+    "out_dir=s"      => \$out_dir,
+    "help"           => \$help,
+);
 
-my $het_max = min( $min_ratio, 0.5 + $het_offset );
+my $usage = "Future usage statement goes here...\n";
+die $usage if $help;
+die $usage
+  unless defined $id &&
+         defined $par1_id &&
+         defined $par2_id;
+
+my @genotyped_files = @ARGV;
+
+my $het_max = min( $min_ratio, 0.5 + $offset_het );
 
 my %snps;
 for my $geno_file (@genotyped_files) {
@@ -77,12 +95,16 @@ for my $geno_file (@genotyped_files) {
     delete $snps{$chr}{$_} for @recent;
 }
 
-open my $boundaries_out_fh, ">", "$id.boundaries";
+my $boundaries_dir    = "$out_dir/boundaries";
+my $filtered_snps_dir = "$out_dir/filtered-snps";
+make_path( $boundaries_dir, $filtered_snps_dir );
+
+open my $boundaries_out_fh, ">", "$boundaries_dir/$id.boundaries";
 for my $chr ( sort keys %snps ) {
     my $last_parent = '';
     my $last_pos    = 0;
 
-    open my $snp_out_fh, ">", "$id.$chr.filtered.snps";
+    open my $snp_out_fh, ">", "$filtered_snps_dir/$id.$chr.filtered.snps";
     for my $pos ( sort { $a <=> $b } keys $snps{$chr} ) {
         my $score  = $snps{$chr}{$pos}{score};
         my $par_id = $snps{$chr}{$pos}{par_id};
