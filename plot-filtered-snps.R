@@ -4,32 +4,37 @@ args <- commandArgs(trailingOnly = TRUE)
 
 id <- args[1]
 
-if (!exists("args[1]"))
+if (!exists("id"))
   stop("No Sample ID provided!")
 
-if (exists("args[2]")) {
+# if (exists("args[2]")) {
   par1_id <- args[2]
-} else {
-  par1_id <- 'R500'
-}
+# } else {
+  # par1_id <- 'R500'
+# }
 
-if (exists("args[3]")) {
+# if (exists("args[3]")) {
   par2_id <- args[3]
-} else {
-  par2_id <- 'IMB211'
-}
+# } else {
+#   par2_id <- 'IMB211'
+# }
 
 print("running")
 
 # setwd("/Users/mfc/git.repos/detect-boundaries")
 library(ggplot2)
 
-snps.files <- list.files(pattern = paste0(id, ".*snps"))
-
+snps.dir <- "filtered-snps/"
+snps.files <- list.files(path = snps.dir, pattern = id)
+# snps.files <- list.files(path = "filtered-snps/", pattern = paste0(id, "*.snps"))
+# print(snps.files)
+# print(paste0("filtered-snps/", id, "*.filtered.snps"))
+# q()
 snps.df <- data.frame(chr = character(0), pos = integer(0), cov = integer(0), par = character(0))
 
 for (file in snps.files) {
-  print(file)
+  file <- paste0(snps.dir, file)
+  print(paste("Reading", file))
   snps.in <- read.table(file, sep = '\t')
   colnames(snps.in) <- c('chr', 'pos', 'cov', 'par')
   snps.df <- rbind(snps.df, snps.in)
@@ -57,8 +62,10 @@ boundary.plot <- ggplot(snps.df, aes(x = pos, y = binary)) +
 #        plot     = boundary.plot,
 #        width    = 10,
 #        height   = 8)
-print("saving")
-ggsave(filename = paste(id, "png", sep = "."),
+
+plot.name <- paste0("plots/", id, ".png")
+print(paste("Saving", plot.name))
+ggsave(filename = plot.name,
        plot     = boundary.plot,
        width    = 10,
        height   = 8)
