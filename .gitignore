@@ -1,3 +1,4 @@
+bin*
 polyDB.*
 *.filtered.snps
 *.genotyped
@@ -6,5 +7,6 @@ polyDB.*
 *.boundaries
 *.png
 *.pdf
+*.tsv
 .Rapp.history
 snps.out
