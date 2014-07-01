@@ -113,18 +113,53 @@ sub get_chr_lengths {
 sub summarize_ranges {
     my ( $chr, $lengths ) = @_;
 
-    my $count = @$lengths;
-    my $min   = min @$lengths;
-    my $mean  = sprintf( '%.0f', sum(@$lengths) / $count );
-    my $max   = max @$lengths;
+    my $count  = scalar @$lengths;
+    my $min    = min @$lengths;
+    my $median = median(@$lengths);
+    my $mean   = mean(@$lengths);
+    my $max    = max @$lengths;
 
     my $summary = <<END_SUMMARY;
 $chr
-  count: $count
-  min:   $min
-  mean:  $mean
-  max:   $max
+  count:  $count
+  min:    $min
+  median: $median
+  mean:   $mean
+  max:    $max
 END_SUMMARY
 
     say $summary;
+}
+
+sub mean {
+    my @values = @_;
+
+    my $count = scalar @values;
+    return int sum(@values) / $count;  # truncate decimals for these summaries
+}
+
+sub median {
+    my @unsorted_values = @_;
+
+    my @values = sort { $a <=> $b } @unsorted_values;
+    my $count  = scalar @values;
+    my $mid    = int @values / 2;
+    my $median;
+    if ( $count == 0 ) {
+        warn "WARNING: No values passed to median()";
+    }
+    elsif ( $count == 1 ) {
+        $median = $values[0];
+    }
+    elsif ( $count == 2 ) {
+        $median = mean(@values);
+    }
+    elsif ( @values % 2 ) {
+        $median = $values[$mid];
+    }
+    else {
+        $median = mean( $values[$mid], $values[ $mid + 1 ] );
+    }
+
+    return $median;
 }
