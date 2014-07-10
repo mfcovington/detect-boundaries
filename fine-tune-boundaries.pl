@@ -27,6 +27,7 @@ for my $bounds_file (@boundaries_files) {
     my $sample_id  = get_sample_id($bounds_file);
     my $boundaries = get_boundaries($bounds_file);
     my $genotypes  = get_genotypes( $genotyped_dir, $sample_id );
+    compare_chromosome_counts( $boundaries, $genotypes, $sample_id );
 
     # say $sample_id;
     # p $boundaries;
@@ -66,4 +67,15 @@ sub get_genotypes {
         close $geno_fh;
     }
     return \%genotypes;
+}
+
+sub compare_chromosome_counts {
+    my ( $boundaries, $genotypes, $sample_id ) = @_;
+    my @b_chromosomes = sort keys %$boundaries;
+    my @g_chromosomes = sort keys %$genotypes;
+    die
+        "$sample_id: Inconsistent chromosome count for boundaries vs genotypes!\n"
+        if scalar @b_chromosomes != scalar @g_chromosomes;
+    say "@b_chromosomes";
+    say "@g_chromosomes";
 }
