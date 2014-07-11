@@ -197,7 +197,8 @@ sub display_breakpoint {
     my $post = min( $new_idx + $context, $#$geno_positions );
 
     if ( $old_idx > $pre ) {
-        say $$geno_scores{$_} for @$geno_positions[ $pre .. $old_idx - 1 ];
+        highlight_zeroes( $$geno_scores{$_} )
+            for @$geno_positions[ $pre .. $old_idx - 1 ];
     }
 
     if ($terminal_merge) {
@@ -207,15 +208,25 @@ sub display_breakpoint {
     else {
         say colored ['bright_white on_red'],
             "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno ";
-        say $$geno_scores{$_}
+        highlight_zeroes( $$geno_scores{$_} )
             for @$geno_positions[ $old_idx + 1 .. $new_idx - 1 ];
         say colored ['bright_white on_blue'],
             "$$geno_scores{$$geno_positions[$new_idx]}\t$new_geno ";
     }
 
     if ( $new_idx < $post ) {
-        say $$geno_scores{$_} for @$geno_positions[ $new_idx + 1 .. $post ];
+        highlight_zeroes( $$geno_scores{$_} )
+            for @$geno_positions[ $new_idx + 1 .. $post ];
     }
+}
+
+sub highlight_zeroes {
+    my $geno_line = shift;
+
+    say join "\t",
+        map { $_ = $_ eq 0 ? colored( 0, 'black on_bright_yellow' ) : $_ }
+        split /\t/,
+        $geno_line;
 }
 
 sub is_breakpoint_good {
