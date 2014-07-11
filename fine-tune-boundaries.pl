@@ -35,9 +35,13 @@ my @boundaries_files = @ARGV;
 
 make_path $out_dir;
 
+my $counter;
+my $total = scalar @boundaries_files;
 for my $bounds_file (@boundaries_files) {
+    $counter++;
     my $sample_id = get_sample_id($bounds_file);
-
+    say colored ['bright_blue on_bright_yellow'],
+        "  * Processing $sample_id ($counter/$total) *  ";
     my $bounds_out_file = "$out_dir/$sample_id.boundaries";
     die
         "ERROR: Output file ($bounds_out_file) already exists, choose a clean output directory.\n"
