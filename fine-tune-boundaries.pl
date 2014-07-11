@@ -37,10 +37,13 @@ for my $bounds_file (@boundaries_files) {
     my $genotypes  = get_genotypes( $genotyped_dir, $sample_id );
     compare_chromosome_counts( $boundaries, $genotypes, $sample_id );
 
+    my %corrected_boundaries;
     for my $chr ( sort keys %$boundaries ) {
-        analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
+        $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
             $$genotypes{"SL2.40$chr"} ); #temporary fix for chromosome name mismatch
     }
+
+    write_boundaries( \%corrected_boundaries );
 }
 
 sub get_sample_id {
@@ -97,6 +100,9 @@ sub analyze_bins_for_chr {
     my $old_pos  = $geno_positions[0];
     my $old_geno = 'START OF CHROMOSOME';
 
+    my $previous_start;
+    my %corrected_bins;
+    my $corrected_breakpoints;
     for my $current_bin (@$bins) {
         my $new_pos  = $$current_bin{'start'};
         my $new_geno = $$current_bin{'geno'};
@@ -104,20 +110,44 @@ sub analyze_bins_for_chr {
         display_breakpoint( $old_geno, $old_pos, $new_geno, $new_pos,
             \@geno_positions, $geno_scores, $sample_id, $chr );
 
-        if ( $old_geno eq 'START OF CHROMOSOME' ) {
-            is_breakpoint_good( $new_geno );
+        if ( !defined $previous_start ) {
+            $corrected_breakpoints = is_breakpoint_good($new_geno);
         }
         else {
-            is_breakpoint_good( $old_geno, $new_geno );
+            $corrected_breakpoints = is_breakpoint_good( $old_geno, $new_geno );
+
+            if ( exists $$corrected_breakpoints{$old_geno} ) {
+                $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
+            }
+            else {
+                $corrected_bins{$previous_start}{'end'} = $old_pos;
+            }
         }
+
+        $new_pos = $$corrected_breakpoints{$new_geno}
+            if exists $$corrected_breakpoints{$new_geno};
+        $corrected_bins{$new_pos}{'geno'} = $new_geno;
+
+        $previous_start = $new_pos;
 
         $old_pos  = $$current_bin{'end'};
         $old_geno = $new_geno;
     }
+
     display_breakpoint( $old_geno, $old_pos, 'END OF CHROMOSOME',
         $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
         $chr );
-    is_breakpoint_good( $old_geno );
+
+    $corrected_breakpoints = is_breakpoint_good( $old_geno );
+
+    if ( exists $$corrected_breakpoints{$old_geno} ) {
+        $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
+    }
+    else {
+        $corrected_bins{$previous_start}{'end'} = $old_pos;
+    }
+
+    return \%corrected_bins;
 }
 
 sub display_breakpoint {
@@ -184,11 +214,13 @@ sub is_breakpoint_good {
     }
     return if $yes_no =~ /^y$/i;
 
-    enter_new_breakpoint($_) for @genotypes;
+    my %corrected_breakpoints;
+    enter_new_breakpoint( $_, \%corrected_breakpoints ) for @genotypes;
+    return \%corrected_breakpoints;
 }
 
 sub enter_new_breakpoint {
-    my $genotype = shift;
+    my ( $genotype, $corrected_breakpoints ) = @_;
 
     my $position;
     my $input_valid = 0;
@@ -198,5 +230,15 @@ sub enter_new_breakpoint {
         chomp( $position = <STDIN> );
         $input_valid++ if looks_like_number $position || $position eq '';
     }
-    say "NEW POS FOR $genotype: $position" unless $position eq '';
+    $$corrected_breakpoints{$genotype} = $position unless $position eq '';
+}
+
+sub write_boundaries {
+    my ( $corrected_boundaries ) = @_;
+
+    for my $chr ( sort keys %$corrected_boundaries ) {
+        for my $start ( sort { $a <=> $b } keys $$corrected_boundaries{$chr} ) {
+            say join "\t", $chr, $start, $$corrected_boundaries{$chr}{$start}{'end'}, $$corrected_boundaries{$chr}{$start}{'geno'};
+        }
+    }
 }
