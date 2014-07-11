@@ -14,6 +14,7 @@ use File::Basename;
 use File::Path 'make_path';
 use List::Util qw(min max);
 use List::MoreUtils 'first_index';
+use POSIX 'strftime';
 use Scalar::Util 'looks_like_number';
 use Term::ANSIColor;
 use Term::ReadKey;
@@ -251,10 +252,13 @@ sub is_breakpoint_good {
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDoes this breakpoint look good? (y/n) ";
+            "\nDoes this breakpoint look good? (y/n/p) ";
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
+        if ( $yes_no =~ /^p$/i ) {
+            take_a_break();
+        }
         $input_valid++ if $yes_no =~ /^[yn]$/i;
     }
     print "\n";
@@ -263,6 +267,22 @@ sub is_breakpoint_good {
     my %corrected_breakpoints;
     enter_new_breakpoint( $_, \%corrected_breakpoints ) for @genotypes;
     return \%corrected_breakpoints;
+}
+
+sub take_a_break {
+    my $minutes;
+    my $input_valid = 0;
+    while ( !$input_valid ) {
+        print colored ['bold bright_cyan on_black'],
+            "\nFor how many minutes would you like to pause the analysis? ";
+        chomp( $minutes = <STDIN> );
+        $input_valid++ if looks_like_number $minutes;
+    }
+    my $now = strftime "%H:%M:%S", localtime;
+    say colored ['bold bright_cyan on_black'],
+        "Pausing for $minutes minutes at $now. Enjoy your break!";
+    sleep $minutes * 60;
+    print colored ['bold bright_cyan on_black'], "Wake up!";
 }
 
 sub enter_new_breakpoint {
