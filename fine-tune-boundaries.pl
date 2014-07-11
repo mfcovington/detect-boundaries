@@ -11,6 +11,7 @@ use autodie;
 use feature 'say';
 use Getopt::Long;
 use File::Basename;
+use File::Path 'make_path';
 use List::Util qw(min max);
 use List::MoreUtils 'first_index';
 use Scalar::Util 'looks_like_number';
@@ -18,23 +19,32 @@ use Term::ANSIColor;
 
 use Data::Printer;
 
-# TODO: Add warning that boundaries files will be re-written. Alternatively (or in addition to): write new files in alternate dir
 # TODO: Change temporary fix for chromosome name mismatch
 
 my $genotyped_dir;
 my $context = 10;
+my $out_dir = ".";
 
 my $options = GetOptions(
     "genotyped_dir=s" => \$genotyped_dir,
     "context=i"       => \$context,
+    "out_dir=s"       => \$out_dir,
 );
 
 my @boundaries_files = @ARGV;
 
+make_path $out_dir;
+
 for my $bounds_file (@boundaries_files) {
-    my $sample_id  = get_sample_id($bounds_file);
+    my $sample_id = get_sample_id($bounds_file);
+
+    my $bounds_out_file = "$out_dir/$sample_id.boundaries";
+    die
+        "ERROR: Output file ($bounds_out_file) already exists, choose a clean output directory.\n"
+        if -e $bounds_out_file;
+
     my $boundaries = get_boundaries($bounds_file);
-    my $genotypes  = get_genotypes( $genotyped_dir, $sample_id );
+    my $genotypes = get_genotypes( $genotyped_dir, $sample_id );
     compare_chromosome_counts( $boundaries, $genotypes, $sample_id );
 
     my %corrected_boundaries;
@@ -49,7 +59,7 @@ for my $bounds_file (@boundaries_files) {
         issue_warnings( $warnings, $sample_id );
     }
     else {
-        write_boundaries( \%corrected_boundaries );
+        write_boundaries( \%corrected_boundaries, $bounds_out_file );
     }
 }
 
@@ -289,11 +299,15 @@ sub issue_warnings {
 }
 
 sub write_boundaries {
-    my ( $corrected_boundaries ) = @_;
+    my ( $boundaries, $bounds_out_file ) = @_;
 
-    for my $chr ( sort keys %$corrected_boundaries ) {
-        for my $start ( sort { $a <=> $b } keys $$corrected_boundaries{$chr} ) {
-            say join "\t", $chr, $start, $$corrected_boundaries{$chr}{$start}{'end'}, $$corrected_boundaries{$chr}{$start}{'geno'};
+    open my $bounds_out_fh, ">", $bounds_out_file;
+    for my $chr ( sort keys %$boundaries ) {
+        for my $start ( sort { $a <=> $b } keys $$boundaries{$chr} ) {
+            say $bounds_out_fh join "\t", $chr, $start,
+                $$boundaries{$chr}{$start}{'end'},
+                $$boundaries{$chr}{$start}{'geno'};
         }
     }
+    close $bounds_out_fh;
 }
