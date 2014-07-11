@@ -43,7 +43,14 @@ for my $bounds_file (@boundaries_files) {
             $$genotypes{"SL2.40$chr"} ); #temporary fix for chromosome name mismatch
     }
 
-    write_boundaries( \%corrected_boundaries );
+    my $warnings = validate_boundaries( \%corrected_boundaries, $genotypes );
+
+    if ( scalar @$warnings > 0 ) {
+        issue_warnings( $warnings, $sample_id );
+    }
+    else {
+        write_boundaries( \%corrected_boundaries );
+    }
 }
 
 sub get_sample_id {
@@ -231,6 +238,54 @@ sub enter_new_breakpoint {
         $input_valid++ if looks_like_number $position || $position eq '';
     }
     $$corrected_breakpoints{$genotype} = $position unless $position eq '';
+}
+
+sub validate_boundaries {
+    my ( $corrected_boundaries, $genotypes ) = @_;
+
+    my @warnings;
+    for my $chr ( sort keys %$corrected_boundaries ) {
+
+        my $previous_geno = "";
+        my $previous_end  = 0;
+
+        my @geno_positions
+            = sort { $a <=> $b } keys $$genotypes{"SL2.40$chr"}; #temporary fix for chromosome name mismatch
+        my $first_pos = $geno_positions[0];
+        my $last_pos  = $geno_positions[-1];
+
+        for my $start ( sort { $a <=> $b } keys $$corrected_boundaries{$chr} )
+        {
+            my $end = $$corrected_boundaries{$chr}{$start}{'end'};
+            my $current_genotype
+                = $$corrected_boundaries{$chr}{$start}{'geno'};
+
+            push @warnings,
+                "Current bin start ($chr:$start) <= previous bin end ($chr:$previous_end)"
+                if $start <= $previous_end;
+            push @warnings, "Bin start ($chr:$start) >= bin end ($chr:$end)"
+                if $start >= $end;
+            push @warnings,
+                "Bin start ($chr:$start) < first genotyped position ($first_pos)"
+                if $start < $first_pos;
+            push @warnings,
+                "Bin end ($chr:$end) > last genotyped position ($last_pos)"
+                if $end > $last_pos;
+            push @warnings, "Genotypes don't alternate on $chr"
+                if $current_genotype eq $previous_geno;
+
+            $previous_end = $end;
+        }
+    }
+
+    return \@warnings;
+}
+
+sub issue_warnings {
+    my ( $warnings, $sample_id ) = @_;
+
+    say colored [ 'bright_red on_black' ], "ERROR: Boundaries file not written for $sample_id";
+    say colored [ 'bright_red on_black' ], "  $_" for @$warnings;
 }
 
 sub write_boundaries {
