@@ -16,6 +16,7 @@ use List::Util qw(min max);
 use List::MoreUtils 'first_index';
 use Scalar::Util 'looks_like_number';
 use Term::ANSIColor;
+use Term::ANSIScreen 'cls';
 use Term::ReadKey;
 
 use Data::Printer;
@@ -51,8 +52,6 @@ my $total = scalar @boundaries_files;
 for my $bounds_file (@boundaries_files) {
     $counter++;
     $sample_id = get_sample_id($bounds_file);
-    say colored ['bright_blue on_bright_yellow'],
-        "  * Processing $sample_id ($counter/$total) *  ";
     my $bounds_out_file = "$out_dir/$sample_id.boundaries";
     die
         "ERROR: Output file ($bounds_out_file) already exists, choose a clean output directory.\n"
@@ -186,6 +185,11 @@ sub display_breakpoint {
     my ( $old_geno, $old_pos, $new_geno, $new_pos, $geno_positions,
         $geno_scores, $sample_id, $chr )
         = @_;
+
+    print cls();
+    say colored ['bright_blue on_bright_yellow'],
+        "  * Processing $sample_id ($counter/$total) *  ";
+    print "\n";
 
     my $error_msg
         = "ERROR: Overlapping bins for $sample_id on $chr ($old_pos should be less than $new_pos)\n";
