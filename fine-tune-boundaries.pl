@@ -13,6 +13,7 @@ use Getopt::Long;
 use File::Basename;
 use List::Util qw(min max);
 use List::MoreUtils 'first_index';
+use Scalar::Util 'looks_like_number';
 use Term::ANSIColor;
 
 use Data::Printer;
@@ -102,7 +103,13 @@ sub analyze_bins_for_chr {
 
         display_breakpoint( $old_geno, $old_pos, $new_geno, $new_pos,
             \@geno_positions, $geno_scores, $sample_id, $chr );
-        say "----";
+
+        if ( $old_geno eq 'START OF CHROMOSOME' ) {
+            is_breakpoint_good( $new_geno );
+        }
+        else {
+            is_breakpoint_good( $old_geno, $new_geno );
+        }
 
         $old_pos  = $$current_bin{'end'};
         $old_geno = $new_geno;
@@ -110,7 +117,7 @@ sub analyze_bins_for_chr {
     display_breakpoint( $old_geno, $old_pos, 'END OF CHROMOSOME',
         $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
         $chr );
-    say "----";
+    is_breakpoint_good( $old_geno );
 }
 
 sub display_breakpoint {
@@ -162,4 +169,34 @@ sub display_breakpoint {
     if ( $new_idx < $post ) {
         say $$geno_scores{$_} for @$geno_positions[ $new_idx + 1 .. $post ];
     }
+}
+
+sub is_breakpoint_good {
+    my @genotypes = @_;
+
+    my $yes_no;
+    my $input_valid = 0;
+    while ( !$input_valid ) {
+        print colored ['bold bright_cyan on_black'],
+            "Does this breakpoint look good? (y/n) ";
+        $yes_no = <STDIN>;
+        $input_valid++ if $yes_no =~ /^[yn]$/i;
+    }
+    return if $yes_no =~ /^y$/i;
+
+    enter_new_breakpoint($_) for @genotypes;
+}
+
+sub enter_new_breakpoint {
+    my $genotype = shift;
+
+    my $position;
+    my $input_valid = 0;
+    while ( !$input_valid ) {
+        print colored ['bold bright_cyan on_black'],
+            "Enter new position for $genotype (leave blank if OK): ";
+        chomp( $position = <STDIN> );
+        $input_valid++ if looks_like_number $position || $position eq '';
+    }
+    say "NEW POS FOR $genotype: $position" unless $position eq '';
 }
