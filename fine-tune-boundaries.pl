@@ -16,10 +16,21 @@ use List::Util qw(min max);
 use List::MoreUtils 'first_index';
 use Scalar::Util 'looks_like_number';
 use Term::ANSIColor;
+use Term::ReadKey;
 
 use Data::Printer;
 
 # TODO: Change temporary fix for chromosome name mismatch
+
+my $sample_id;
+
+sub safe_interrupt {
+    ReadMode 0;
+    say "\n", colored ['bright_blue on_bright_yellow'],
+        "  * You stopped while working on $sample_id *  ";
+    exit;
+}
+$SIG{INT} = \&safe_interrupt;
 
 my $genotyped_dir;
 my $context = 10;
@@ -39,7 +50,7 @@ my $counter;
 my $total = scalar @boundaries_files;
 for my $bounds_file (@boundaries_files) {
     $counter++;
-    my $sample_id = get_sample_id($bounds_file);
+    $sample_id = get_sample_id($bounds_file);
     say colored ['bright_blue on_bright_yellow'],
         "  * Processing $sample_id ($counter/$total) *  ";
     my $bounds_out_file = "$out_dir/$sample_id.boundaries";
@@ -240,10 +251,13 @@ sub is_breakpoint_good {
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "Does this breakpoint look good? (y/n) ";
-        $yes_no = <STDIN>;
+            "\nDoes this breakpoint look good? (y/n) ";
+        ReadMode 3;
+        while ( not defined( $yes_no = ReadKey(-1) ) ) { }
+        ReadMode 0;
         $input_valid++ if $yes_no =~ /^[yn]$/i;
     }
+    print "\n";
     return if $yes_no =~ /^y$/i;
 
     my %corrected_breakpoints;
