@@ -11,7 +11,14 @@ use autodie;
 use feature 'say';
 use Getopt::Long;
 use File::Basename;
+use List::Util qw(min max);
+use List::MoreUtils 'first_index';
+use Term::ANSIColor;
+
 use Data::Printer;
+
+# TODO: Add warning that boundaries files will be re-written. Alternatively (or in addition to): write new files in alternate dir
+# TODO: Change temporary fix for chromosome name mismatch
 
 my $genotyped_dir;
 my $context = 10;
@@ -29,8 +36,10 @@ for my $bounds_file (@boundaries_files) {
     my $genotypes  = get_genotypes( $genotyped_dir, $sample_id );
     compare_chromosome_counts( $boundaries, $genotypes, $sample_id );
 
-    # say $sample_id;
-    # p $boundaries;
+    for my $chr ( sort keys %$boundaries ) {
+        analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
+            $$genotypes{"SL2.40$chr"} ); #temporary fix for chromosome name mismatch
+    }
 }
 
 sub get_sample_id {
@@ -76,6 +85,81 @@ sub compare_chromosome_counts {
     die
         "$sample_id: Inconsistent chromosome count for boundaries vs genotypes!\n"
         if scalar @b_chromosomes != scalar @g_chromosomes;
-    say "@b_chromosomes";
-    say "@g_chromosomes";
+}
+
+sub analyze_bins_for_chr {
+    my ( $sample_id, $chr, $bins, $geno_scores ) = @_;
+    my $bin_count = scalar @$bins;
+
+    my @geno_positions = sort { $a <=> $b } keys %$geno_scores;
+
+    my $old_pos  = $geno_positions[0];
+    my $old_geno = 'START OF CHROMOSOME';
+
+    for my $current_bin (@$bins) {
+        my $new_pos  = $$current_bin{'start'};
+        my $new_geno = $$current_bin{'geno'};
+
+        display_breakpoint( $old_geno, $old_pos, $new_geno, $new_pos,
+            \@geno_positions, $geno_scores, $sample_id, $chr );
+        say "----";
+
+        $old_pos  = $$current_bin{'end'};
+        $old_geno = $new_geno;
+    }
+    display_breakpoint( $old_geno, $old_pos, 'END OF CHROMOSOME',
+        $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
+        $chr );
+    say "----";
+}
+
+sub display_breakpoint {
+    my ( $old_geno, $old_pos, $new_geno, $new_pos, $geno_positions,
+        $geno_scores, $sample_id, $chr )
+        = @_;
+
+    my $error_msg
+        = "ERROR: Overlapping bins for $sample_id on $chr ($old_pos should be less than $new_pos)\n";
+    my $terminal_merge = 0;
+    if ( $old_pos == $new_pos ) {
+
+        if (   $old_geno eq 'START OF CHROMOSOME'
+            || $new_geno eq 'END OF CHROMOSOME' )
+        {
+            $terminal_merge++;
+        }
+        else {
+            die $error_msg;
+        }
+    }
+    elsif ( $old_pos > $new_pos ) {
+        die $error_msg;
+    }
+
+    my $old_idx = first_index { $_ == $old_pos } @$geno_positions;
+    my $new_idx = first_index { $_ == $new_pos } @$geno_positions;
+
+    my $pre = max( $old_idx - $context, 0 );
+    my $post = min( $new_idx + $context, $#$geno_positions );
+
+    if ( $old_idx > $pre ) {
+        say $$geno_scores{$_} for @$geno_positions[ $pre .. $old_idx - 1 ];
+    }
+
+    if ($terminal_merge) {
+        say colored ['bright_white on_magenta'],
+            "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno --- $new_geno ";
+    }
+    else {
+        say colored ['bright_white on_red'],
+            "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno ";
+        say $$geno_scores{$_}
+            for @$geno_positions[ $old_idx + 1 .. $new_idx - 1 ];
+        say colored ['bright_white on_blue'],
+            "$$geno_scores{$$geno_positions[$new_idx]}\t$new_geno ";
+    }
+
+    if ( $new_idx < $post ) {
+        say $$geno_scores{$_} for @$geno_positions[ $new_idx + 1 .. $post ];
+    }
 }
