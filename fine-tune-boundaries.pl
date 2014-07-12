@@ -258,7 +258,7 @@ sub is_breakpoint_good {
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDoes this breakpoint look good? (y/n/p/x) ";
+            "\nDoes this breakpoint look good? (y/n/p/x/?) ";
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
@@ -266,6 +266,7 @@ sub is_breakpoint_good {
             when (/^[yn]$/i) { $input_valid++ }
             when (/^p$/i)    { take_a_break() }
             when (/^x$/i)    { safe_exit() }
+            when (/^\?$/i)   { help() }
         }
     }
     print "\n";
@@ -285,6 +286,19 @@ EOF
     chomp $pause_msg;
     print colored ['bold bright_cyan on_black'], $pause_msg;
     <STDIN>;
+}
+
+sub help {
+    my $help_message = <<EOF;
+
+Y: Yes, breakpoint looks good.
+N: No, breakpoint needs to be adjusted.
+P: Pause analysis. This eliminates unnecessary CPU usage.
+X: Exit.
+?: You are here.
+EOF
+    chomp $help_message;
+    say colored ['bright_blue'], $help_message;
 }
 
 sub enter_new_breakpoint {
@@ -355,7 +369,7 @@ sub redo_or_continue {
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDo you want to redo this sample or continue to the next? (r/c) ";
+            "\nDo you want to (r)edo this sample or (c)ontinue to the next? (r/c) ";
         ReadMode 3;
         while ( not defined( $response = ReadKey(-1) ) ) { }
         ReadMode 0;
