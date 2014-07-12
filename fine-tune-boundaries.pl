@@ -75,6 +75,7 @@ for my $bounds_file (@boundaries_files) {
     }
     else {
         write_boundaries( \%corrected_boundaries, $bounds_out_file );
+        motivate();
     }
     $counter++;
 }
@@ -376,4 +377,20 @@ sub write_boundaries {
         }
     }
     close $bounds_out_fh;
+}
+
+sub motivate {
+    my @colors = qw(clear bright_red bright_green bright_yellow bright_blue
+        bright_magenta bright_cyan);
+    my $motivation = <<'EOF';
+   ______                __       __      __    __
+  / ____/___  ____  ____/ /      / /___  / /_  / /
+ / / __/ __ \/ __ \/ __  /  __  / / __ \/ __ \/ /
+/ /_/ / /_/ / /_/ / /_/ /  / /_/ / /_/ / /_/ /_/
+\____/\____/\____/\__,_/   \____/\____/_.___(_)
+
+EOF
+
+    print cls();
+    print colored [ $colors[ rand @colors ] ], $motivation;
 }
