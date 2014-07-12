@@ -307,11 +307,12 @@ sub validate_boundaries {
         my $previous_end  = 0;
 
         my @geno_positions
-            = sort { $a <=> $b } keys $$genotypes{"SL2.40$chr"}; #temporary fix for chromosome name mismatch
+            = sort { $a <=> $b } keys %{ $$genotypes{"SL2.40$chr"} }; #temporary fix for chromosome name mismatch
         my $first_pos = $geno_positions[0];
         my $last_pos  = $geno_positions[-1];
 
-        for my $start ( sort { $a <=> $b } keys $$corrected_boundaries{$chr} )
+        for my $start ( sort { $a <=> $b }
+            keys %{ $$corrected_boundaries{$chr} } )
         {
             my $end = $$corrected_boundaries{$chr}{$start}{'end'};
             my $current_genotype
@@ -350,7 +351,7 @@ sub write_boundaries {
 
     open my $bounds_out_fh, ">", $bounds_out_file;
     for my $chr ( sort keys %$boundaries ) {
-        for my $start ( sort { $a <=> $b } keys $$boundaries{$chr} ) {
+        for my $start ( sort { $a <=> $b } keys %{ $$boundaries{$chr} } ) {
             say $bounds_out_fh join "\t", $chr, $start,
                 $$boundaries{$chr}{$start}{'end'},
                 $$boundaries{$chr}{$start}{'geno'};
