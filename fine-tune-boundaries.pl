@@ -47,10 +47,9 @@ my @boundaries_files = @ARGV;
 
 make_path $out_dir;
 
-my $counter;
+my $counter = 1;
 my $total = scalar @boundaries_files;
 for my $bounds_file (@boundaries_files) {
-    $counter++;
     $sample_id = get_sample_id($bounds_file);
     my $bounds_out_file = "$out_dir/$sample_id.boundaries";
     die
@@ -71,10 +70,12 @@ for my $bounds_file (@boundaries_files) {
 
     if ( scalar @$warnings > 0 ) {
         issue_warnings( $warnings, $sample_id );
+        redo if redo_or_continue();
     }
     else {
         write_boundaries( \%corrected_boundaries, $bounds_out_file );
     }
+    $counter++;
 }
 
 sub get_sample_id {
@@ -344,6 +345,21 @@ sub issue_warnings {
 
     say colored [ 'bright_red on_black' ], "ERROR: Boundaries file not written for $sample_id";
     say colored [ 'bright_red on_black' ], "  $_" for @$warnings;
+}
+
+sub redo_or_continue {
+    my $response;
+    my $input_valid = 0;
+    while ( !$input_valid ) {
+        print colored ['bold bright_cyan on_black'],
+            "\nDo you want to redo this sample or continue to the next? (r/c) ";
+        ReadMode 3;
+        while ( not defined( $response = ReadKey(-1) ) ) { }
+        ReadMode 0;
+        $input_valid++ if $response =~ /^[rc]$/i;
+    }
+    print "\n";
+    return 1 if $response =~ /^r$/i;
 }
 
 sub write_boundaries {
