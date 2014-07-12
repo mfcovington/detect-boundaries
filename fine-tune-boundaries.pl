@@ -18,6 +18,7 @@ use Scalar::Util 'looks_like_number';
 use Term::ANSIColor;
 use Term::ANSIScreen 'cls';
 use Term::ReadKey;
+use v5.10.1;
 
 use Data::Printer;
 
@@ -25,13 +26,13 @@ use Data::Printer;
 
 my $sample_id;
 
-sub safe_interrupt {
+sub safe_exit {
     ReadMode 0;
     say "\n", colored ['bright_blue on_bright_yellow'],
         "  * You stopped while working on $sample_id *  ";
     exit;
 }
-$SIG{INT} = \&safe_interrupt;
+$SIG{INT} = \&safe_exit;
 
 my $genotyped_dir;
 my $context = 10;
@@ -256,14 +257,15 @@ sub is_breakpoint_good {
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDoes this breakpoint look good? (y/n/p) ";
+            "\nDoes this breakpoint look good? (y/n/p/x) ";
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
-        if ( $yes_no =~ /^p$/i ) {
-            take_a_break();
+        for ($yes_no) {
+            when (/^[yn]$/i) { $input_valid++ }
+            when (/^p$/i)    { take_a_break() }
+            when (/^x$/i)    { safe_exit() }
         }
-        $input_valid++ if $yes_no =~ /^[yn]$/i;
     }
     print "\n";
     return if $yes_no =~ /^y$/i;
