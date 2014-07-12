@@ -50,7 +50,7 @@ make_path $out_dir;
 
 my $counter = 1;
 my $total = scalar @boundaries_files;
-for my $bounds_file (@boundaries_files) {
+SAMPLE: for my $bounds_file (@boundaries_files) {
     $sample_id = get_sample_id($bounds_file);
     my $bounds_out_file = "$out_dir/$sample_id.boundaries";
     die
@@ -63,8 +63,13 @@ for my $bounds_file (@boundaries_files) {
 
     my %corrected_boundaries;
     for my $chr ( sort keys %$boundaries ) {
+        my $redo_sample = 0;
         $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
-            $$genotypes{"SL2.40$chr"} ); #temporary fix for chromosome name mismatch
+            $$genotypes{"SL2.40$chr"}, \$redo_sample ); #temporary fix for chromosome name mismatch
+        if ($redo_sample) {
+            print "\n";
+            redo SAMPLE;
+        }
     }
 
     my $warnings = validate_boundaries( \%corrected_boundaries, $genotypes );
@@ -126,7 +131,7 @@ sub compare_chromosome_counts {
 }
 
 sub analyze_bins_for_chr {
-    my ( $sample_id, $chr, $bins, $geno_scores ) = @_;
+    my ( $sample_id, $chr, $bins, $geno_scores, $redo_sample ) = @_;
     my $bin_count = scalar @$bins;
 
     my @geno_positions = sort { $a <=> $b } keys %$geno_scores;
@@ -145,10 +150,12 @@ sub analyze_bins_for_chr {
             \@geno_positions, $geno_scores, $sample_id, $chr );
 
         if ( !defined $previous_start ) {
-            $corrected_breakpoints = is_breakpoint_good($new_geno);
+            $corrected_breakpoints
+                = is_breakpoint_good( $redo_sample, $new_geno );
         }
         else {
-            $corrected_breakpoints = is_breakpoint_good( $old_geno, $new_geno );
+            $corrected_breakpoints
+                = is_breakpoint_good( $redo_sample, $old_geno, $new_geno );
 
             if ( exists $$corrected_breakpoints{$old_geno} ) {
                 $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
@@ -157,6 +164,7 @@ sub analyze_bins_for_chr {
                 $corrected_bins{$previous_start}{'end'} = $old_pos;
             }
         }
+        return if $$redo_sample;
 
         $new_pos = $$corrected_breakpoints{$new_geno}
             if exists $$corrected_breakpoints{$new_geno};
@@ -172,7 +180,7 @@ sub analyze_bins_for_chr {
         $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
         $chr );
 
-    $corrected_breakpoints = is_breakpoint_good( $old_geno );
+    $corrected_breakpoints = is_breakpoint_good( $redo_sample, $old_geno );
 
     if ( exists $$corrected_breakpoints{$old_geno} ) {
         $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
@@ -252,18 +260,19 @@ sub highlight_zeroes {
 }
 
 sub is_breakpoint_good {
-    my @genotypes = @_;
+    my ( $redo_sample, @genotypes ) = @_;
 
     my $yes_no;
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDoes this breakpoint look good? (y/n/p/x/?) ";
+            "\nDoes this breakpoint look good? (y/n/r/p/x/?) ";
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
         for ($yes_no) {
             when (/^[yn]$/i) { $input_valid++ }
+            when (/^r$/i)    { $$redo_sample++; return }
             when (/^p$/i)    { take_a_break() }
             when (/^x$/i)    { safe_exit() }
             when (/^\?$/i)   { help() }
@@ -293,6 +302,7 @@ sub help {
 
 Y: Yes, breakpoint looks good.
 N: No, breakpoint needs to be adjusted.
+R: Make a mistake? Redo the current sample.
 P: Pause analysis. This eliminates unnecessary CPU usage.
 X: Exit.
 ?: You are here.
