@@ -66,10 +66,7 @@ SAMPLE: for my $bounds_file (@boundaries_files) {
         my $redo_sample = 0;
         $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
             $$genotypes{"SL2.40$chr"}, \$redo_sample ); #temporary fix for chromosome name mismatch
-        if ($redo_sample) {
-            print "\n";
-            redo SAMPLE;
-        }
+        redo SAMPLE if $redo_sample;
     }
 
     my $warnings = validate_boundaries( \%corrected_boundaries, $genotypes );
@@ -198,6 +195,7 @@ sub display_breakpoint {
         = @_;
 
     print cls();
+    print "\n";
     say colored ['bright_blue on_bright_yellow'],
         "  * Processing $sample_id ($counter/$total) *  ";
     print "\n";
@@ -278,9 +276,9 @@ sub is_breakpoint_good {
             when (/^\?$/i)   { help() }
         }
     }
-    print "\n";
     return if $yes_no =~ /^y$/i;
 
+    print "\n";
     my %corrected_breakpoints;
     enter_new_breakpoint( $_, \%corrected_breakpoints ) for @genotypes;
     return \%corrected_breakpoints;
@@ -385,7 +383,6 @@ sub redo_or_continue {
         ReadMode 0;
         $input_valid++ if $response =~ /^[rc]$/i;
     }
-    print "\n";
     return 1 if $response =~ /^r$/i;
 }
 
