@@ -68,17 +68,25 @@ close $out_fh;
 sub get_genotype {
     my ( $sample_id, $chr, $bin_mid, $boundaries ) = @_;
 
+    my $genotype;
+
     my $start = first { $_ <= $bin_mid }
     sort { $b <=> $a } keys %{ $$boundaries{$sample_id}{$chr} };
-    my $end = $$boundaries{$sample_id}{$chr}{$start}{'end'};
 
-    my $genotype
-        = $bin_mid <= $end
-        ? $$boundaries{$sample_id}{$chr}{$start}{'geno'}
-        : 'NA';
+    if ( defined $start ) {
+        my $end = $$boundaries{$sample_id}{$chr}{$start}{'end'};
+
+        $genotype
+            = $bin_mid <= $end
+            ? $$boundaries{$sample_id}{$chr}{$start}{'geno'}
+            : 'NA';
+    }
+    else {
+        $genotype = 'NA';
+    }
 
 # say join "\t", $sample_id, $chr, $start, $bin_mid, $end, $genotype;
-die unless defined $start;
+# die unless defined $start;
 # exit;
     # my $genotype;
     return $genotype;
