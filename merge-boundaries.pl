@@ -45,7 +45,7 @@ for my $file (@boundary_files) {
 
     for my $chr (@chromosomes) {
         my $end = 0;
-        for my $start ( sort { $a <=> $b } keys $boundaries{$chr} ) {
+        for my $start ( sort { $a <=> $b } keys %{ $boundaries{$chr} } ) {
             $range{$chr}->add( $end + 1, $start - 1 );
             $end = $boundaries{$chr}{$start};
         }
