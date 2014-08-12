@@ -7,6 +7,7 @@
 #
 use strict;
 use warnings;
+use Log::Reproducible;
 use autodie;
 use feature 'say';
 use Getopt::Long;
@@ -46,12 +47,11 @@ my $het_max = min( $min_ratio, 0.5 + $offset_het );
 
 my %snps;
 for my $geno_file (@genotyped_files) {
-    my @recent;
-    my $momentum    = $min_momentum;
-    my $last_parent = '';
-    my $monitor     = 1;
-    my $chr;
 
+    my $last_parent = '';
+    my $chr;
+    my $momentum = $min_momentum;
+    my @recent;
     open my $geno_fh, "<", $geno_file;
     while (<$geno_fh>) {
         ( $chr, my ( $pos, $par1, $par2, $tot ) ) = split /\t/;
@@ -121,7 +121,8 @@ for my $chr ( sort keys %snps ) {
         }
         $last_pos = $pos;
     }
-    say $boundaries_out_fh join "\t", $last_pos, $last_parent;
+    say $boundaries_out_fh join "\t", $last_pos, $last_parent
+        unless $last_parent eq '';
 
     close $snp_out_fh;
 }
