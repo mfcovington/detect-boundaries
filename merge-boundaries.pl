@@ -32,7 +32,7 @@ my $chr_lengths = get_chr_lengths( $bam_file, \@chromosomes );
 
 my %range;
 for my $chr (@chromosomes) {
-    $range{$chr} = RangeTracker->new();
+    $range{$chr} = Number::RangeTracker->new();
 }
 
 for my $file (@boundary_files) {
@@ -46,10 +46,10 @@ for my $file (@boundary_files) {
     for my $chr (@chromosomes) {
         my $end = 0;
         for my $start ( sort { $a <=> $b } keys $boundaries{$chr} ) {
-            $range{$chr}->add_range( $end + 1, $start - 1 );
+            $range{$chr}->add( $end + 1, $start - 1 );
             $end = $boundaries{$chr}{$start};
         }
-        $range{$chr}->add_range( $end + 1, $chr_lengths->{$chr} );
+        $range{$chr}->add( $end + 1, $chr_lengths->{$chr} );
     }
 
 }
@@ -57,8 +57,8 @@ for my $file (@boundary_files) {
 my %borders;
 my %bins;
 for my $chr (@chromosomes) {
-    %{ $borders{$chr} } = $range{$chr}->output_ranges;
-    %{ $bins{$chr} }    = $range{$chr}->inverse;
+    %{ $borders{$chr} } = $range{$chr}->output;
+    %{ $bins{$chr} }    = $range{$chr}->complement;
 }
 
 # TODO: Write bin boundaries to file
