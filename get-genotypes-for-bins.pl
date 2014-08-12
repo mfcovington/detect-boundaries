@@ -12,39 +12,22 @@ use feature 'say';
 use File::Basename;
 use List::Util 'first';
 
-use Data::Printer;
-
 my $usage = "usage: $0 [OUTPUT_FILE] [BINS_FILE] [BOUNDARIES_FILE_1 BOUNDARIES_FILE_2 ...]";
 die "$usage\n" unless scalar @ARGV >= 3;
 
 my ( $out_file, $bins_file, @boundaries_files_list ) = @ARGV;
-# my $bins_file
-#     = "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/bins.tsv";
-# my @boundaries_files_list = (
-#     "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/BIL_003.boundaries",
-#     "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/BIL_005.boundaries",
-#     "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/BIL_007.boundaries",
-#     "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/BIL_008.boundaries",
-#     "/Users/mfc/Dropbox/best.files/boundaries.best.2014-06-27/boundaries.chr-converted.2014-07-22/BIL_009.boundaries"
-# );
 
 my $bins = get_bins($bins_file);
-# p $bins;
 my $boundaries = {};
 get_boundaries( $_, $boundaries ) for @boundaries_files_list;
 
-# my $genotypes = {};
 my %samples;
 for my $chr ( sort keys %$bins ) {
-    # say $chr;
     for my $bin_mid ( sort { $a <=> $b } keys %{ $$bins{$chr} } ) {
-        # say $bin_mid;
         for my $sample_id ( sort keys %$boundaries ) {
             $samples{$sample_id} = 1;
-            # say $sample_id;
             my $geno
                 = get_genotype( $sample_id, $chr, $bin_mid, $boundaries );
-            # $$genotypes{$sample_id}{$chr}{$bin_mid} = $geno;
             $$bins{$chr}{$bin_mid}{'genotypes'}{$sample_id} = $geno;
         }
     }
@@ -63,8 +46,9 @@ for my $chr ( sort keys %$bins ) {
 }
 close $out_fh;
 
-# p $genotypes;
-# p $bins;
+
+exit;
+
 sub get_genotype {
     my ( $sample_id, $chr, $bin_mid, $boundaries ) = @_;
 
@@ -85,10 +69,6 @@ sub get_genotype {
         $genotype = 'NA';
     }
 
-# say join "\t", $sample_id, $chr, $start, $bin_mid, $end, $genotype;
-# die unless defined $start;
-# exit;
-    # my $genotype;
     return $genotype;
 }
 
@@ -130,13 +110,3 @@ sub get_sample_id {
     my ($sample_id) = fileparse( $bounds_file, ".boundaries" );
     return $sample_id;
 }
-
-# sub find_bin {
-#     my ( $chr, $start, $bins ) = @_;
-
-#     my $bin_start = first { $_ <= $start } sort {$a <=> $b } keys %{ $$bins{$chr} };
-
-#     my $bin_mid;# = $$bins{$chr}{$bin_start}{'mid'};
-
-#     return $bin_mid;
-# }

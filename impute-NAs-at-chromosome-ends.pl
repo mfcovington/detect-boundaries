@@ -26,8 +26,8 @@ output_bin_genotypes( "$bin_geno_file.imputed-NAs", $bin_genotypes,
     $header_line );
 
 merge_adjacent_like_bins($bin_genotypes);
-output_bin_genotypes( "$bin_geno_file.imputed-NAs.merged-like", $bin_genotypes,
-    $header_line );
+output_bin_genotypes( "$bin_geno_file.imputed-NAs.merged-like",
+    $bin_genotypes, $header_line );
 
 exit;
 
@@ -64,8 +64,9 @@ sub impute_genotypes {
         for my $chr ( sort keys %$bin_genotypes ) {
 
             my @genotypes;
-            for my $pos ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
-                push @genotypes, $$bin_genotypes{$chr}{$pos}{'genotypes'}{$sample};
+            for my $bin_mid ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
+                push @genotypes,
+                    $$bin_genotypes{$chr}{$bin_mid}{'genotypes'}{$sample};
             }
 
             if ( $genotypes[0] eq 'NA' ) {
@@ -80,8 +81,8 @@ sub impute_genotypes {
                     for $last_geno_idx + 1 .. $#genotypes;
             }
 
-            for my $pos ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
-                $$bin_genotypes{$chr}{$pos}{'genotypes'}{$sample}
+            for my $bin_mid ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
+                $$bin_genotypes{$chr}{$bin_mid}{'genotypes'}{$sample}
                     = shift @genotypes;
             }
         }
@@ -94,16 +95,17 @@ sub merge_adjacent_like_bins {
     for my $chr ( sort keys %$bin_genotypes ) {
         my $previous_geno = '';
         my $previous_pos  = '';
-        for my $pos ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
-            my $genotypes = join ",", map { $$bin_genotypes{$chr}{$pos}{'genotypes'}{$_} }
-                sort keys %{ $$bin_genotypes{$chr}{$pos}{'genotypes'} };
+        for my $bin_mid ( sort { $a <=> $b } keys %{ $$bin_genotypes{$chr} } ) {
+            my $genotypes = join ",",
+                extract_genotypes_for_position( $chr, $bin_mid,
+                $bin_genotypes );
 
             if ( $genotypes eq $previous_geno ) {
                 $$bin_genotypes{$chr}{$previous_pos}{'merge'} = 1;
             }
 
             $previous_geno = $genotypes;
-            $previous_pos  = $pos;
+            $previous_pos  = $bin_mid;
         }
     }
 }
@@ -124,9 +126,8 @@ sub output_bin_genotypes {
             }
 
             my $end = $$bin_genotypes{$chr}{$bin_mid}{'end'};
-            my @genotypes
-                = map { $$bin_genotypes{$chr}{$bin_mid}{'genotypes'}{$_} }
-                sort keys %{ $$bin_genotypes{$chr}{$bin_mid}{'genotypes'} };
+            my @genotypes = extract_genotypes_for_position( $chr, $bin_mid,
+                $bin_genotypes );
 
             if ( scalar @merged_start > 0 ) {
                 $start = $merged_start[0];
@@ -141,3 +142,9 @@ sub output_bin_genotypes {
     close $out_fh;
 }
 
+sub extract_genotypes_for_position {
+    my ( $chr, $bin_mid, $bin_genotypes ) = @_;
+
+    return map { $$bin_genotypes{$chr}{$bin_mid}{'genotypes'}{$_} }
+        sort keys %{ $$bin_genotypes{$chr}{$bin_mid}{'genotypes'} };
+}
