@@ -268,13 +268,12 @@ sub is_breakpoint_good {
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
-        for ($yes_no) {
-            when (/^[yn]$/i) { $input_valid++ }
-            when (/^r$/i)    { $$redo_sample++; return }
-            when (/^p$/i)    { take_a_break() }
-            when (/^x$/i)    { safe_exit() }
-            when (/^\?$/i)   { help() }
-        }
+
+        if    ( $yes_no =~ /^[yn]$/i ) { $input_valid++ }
+        elsif ( $yes_no =~ /^r$/i )    { $$redo_sample++; return }
+        elsif ( $yes_no =~ /^p$/i )    { take_a_break() }
+        elsif ( $yes_no =~ /^x$/i )    { safe_exit() }
+        elsif ( $yes_no =~ /^\?$/i )   { help() }
     }
     return if $yes_no =~ /^y$/i;
 
