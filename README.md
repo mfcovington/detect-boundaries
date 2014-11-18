@@ -56,7 +56,7 @@ detect-boundaries:`extract-snp-subset.R`
     - `sample-file/bins-snp.mid`
 
 
-detect-boundaries:`get-genotypes-for-subset.pl`
+detect-boundaries:`get-genotypes-for-snp-subset.pl`
 
 - IN:
     - `sample-file/bins-snp.mid`
