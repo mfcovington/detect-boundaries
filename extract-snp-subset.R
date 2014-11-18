@@ -8,8 +8,11 @@ read.multi.tables <- function(file.names, ...) {
 
 vcf.dir <- "/bigdata/brassica/genotype-UNRENAMED-remapped-v1.5.2014-10-16/vcf/"
 vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "*.noD.vcf.summary"))
-obs.rat <- read.multi.tables(vcf.summary.files, header = FALSE, sep = "\t", as.is = TRUE)[c(2:4, 10)]
+obs.rat <- read.multi.tables(vcf.summary.files, header = FALSE, sep = "\t", as.is = TRUE)[c(2:3, 10)]
+colnames(obs.rat) <- c('chr', 'pos', 'observed_ratio')
 # obs.rat <- obs.rat[obs.rat$filter == '.', 2:4]
+
+
 
 bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
