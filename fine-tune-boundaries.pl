@@ -65,7 +65,7 @@ SAMPLE: for my $bounds_file (@boundaries_files) {
     for my $chr ( sort keys %$boundaries ) {
         my $redo_sample = 0;
         $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
-            $$genotypes{"SL2.40$chr"}, \$redo_sample ); #temporary fix for chromosome name mismatch
+            $$genotypes{$chr}, \$redo_sample ); #temporary fix for chromosome name mismatch
         redo SAMPLE if $redo_sample;
     }
 
@@ -332,7 +332,7 @@ sub validate_boundaries {
         my $previous_end  = 0;
 
         my @geno_positions
-            = sort { $a <=> $b } keys %{ $$genotypes{"SL2.40$chr"} }; #temporary fix for chromosome name mismatch
+            = sort { $a <=> $b } keys %{ $$genotypes{$chr} }; #temporary fix for chromosome name mismatch
         my $first_pos = $geno_positions[0];
         my $last_pos  = $geno_positions[-1];
 
