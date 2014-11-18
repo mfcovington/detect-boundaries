@@ -65,7 +65,7 @@ SAMPLE: for my $bounds_file (@boundaries_files) {
     for my $chr ( sort keys %$boundaries ) {
         my $redo_sample = 0;
         $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
-            $$genotypes{"SL2.40$chr"}, \$redo_sample ); #temporary fix for chromosome name mismatch
+            $$genotypes{$chr}, \$redo_sample ); #temporary fix for chromosome name mismatch
         redo SAMPLE if $redo_sample;
     }
 
@@ -268,13 +268,12 @@ sub is_breakpoint_good {
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
-        for ($yes_no) {
-            when (/^[yn]$/i) { $input_valid++ }
-            when (/^r$/i)    { $$redo_sample++; return }
-            when (/^p$/i)    { take_a_break() }
-            when (/^x$/i)    { safe_exit() }
-            when (/^\?$/i)   { help() }
-        }
+
+        if    ( $yes_no =~ /^[yn]$/i ) { $input_valid++ }
+        elsif ( $yes_no =~ /^r$/i )    { $$redo_sample++; return }
+        elsif ( $yes_no =~ /^p$/i )    { take_a_break() }
+        elsif ( $yes_no =~ /^x$/i )    { safe_exit() }
+        elsif ( $yes_no =~ /^\?$/i )   { help() }
     }
     return if $yes_no =~ /^y$/i;
 
@@ -333,7 +332,7 @@ sub validate_boundaries {
         my $previous_end  = 0;
 
         my @geno_positions
-            = sort { $a <=> $b } keys %{ $$genotypes{"SL2.40$chr"} }; #temporary fix for chromosome name mismatch
+            = sort { $a <=> $b } keys %{ $$genotypes{$chr} }; #temporary fix for chromosome name mismatch
         my $first_pos = $geno_positions[0];
         my $last_pos  = $geno_positions[-1];
 

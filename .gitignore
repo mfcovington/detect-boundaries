@@ -10,3 +10,4 @@ polyDB.*
 *.tsv
 .Rapp.history
 snps.out
+repro-archive/

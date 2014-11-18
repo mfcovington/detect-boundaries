@@ -6,14 +6,17 @@ read.multi.tables <- function(file.names, ...) {
     ldply(file.names, function(fn) data.frame(filename = fn, read.table(fn, ...)))
 }
 
-vcf.dir <- "/Users/mfc/git.repos/snps-from-rils/merged.EC50.minflter.vcf/summaries.het_ratio_0_1.alt_ratmin_0_05.filters/"
-vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "merged.*.EC50.minflter.vcf.summary"))
-obs.rat <- read.multi.tables(vcf.summary.files, header = TRUE, sep = "\t", as.is = TRUE)[c(2:4, 12)]
-obs.rat <- obs.rat[obs.rat$filter == '.', 2:4]
+vcf.dir <- "/bigdata/brassica/genotype-UNRENAMED-remapped-v1.5.2014-10-16/vcf/"
+vcf.summary.files <- paste0(vcf.dir, list.files(vcf.dir, "*.noD.vcf.summary"))
+obs.rat <- read.multi.tables(vcf.summary.files, header = FALSE, sep = "\t", as.is = TRUE)[c(2:3, 10)]
+colnames(obs.rat) <- c('chr', 'pos', 'observed_ratio')
+# obs.rat <- obs.rat[obs.rat$filter == '.', 2:4]
+
+
 
 bins <- read.table("bins.tsv", header = TRUE, sep = "\t", as.is = TRUE)
 
-polydb.files <- list.files("./", "polyDB.*")
+polydb.files <- list.files("../snp_master", "polyDB.*.nr", full.names=TRUE)
 snps <- read.multi.tables(polydb.files, header = TRUE, sep = "\t", as.is = TRUE)[2:3]
 
 ####### MIDDLES ######
