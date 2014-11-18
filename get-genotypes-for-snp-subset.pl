@@ -90,7 +90,7 @@ for my $id (@ids) {
         }
         close $geno_fh;
 
-        for my $pos ( sort { $a <=> $b } keys $mids{$chr} ) {
+        for my $pos ( sort { $a <=> $b } keys %{ $mids{$chr} } ) {
             $mids{$chr}{$pos}{$id} = $snps{$chr}{$pos} // 'NA';
         }
     }
@@ -107,10 +107,10 @@ for my $chr (@chromosomes) {
 open my $genotype_fh, ">", "$out_dir/bins/bin-genotype";
 say $genotype_fh join "\t", "chr", "pos", @ids;
 for my $chr ( sort keys %mids ) {
-    for my $pos ( sort { $a <=> $b } keys $mids{$chr} ) {
+    for my $pos ( sort { $a <=> $b } keys %{ $mids{$chr} } ) {
         next unless exists $polydb{$chr}{$pos};
         my $line = "$chr\t$pos";
-        for my $id ( sort keys $mids{$chr}{$pos} ) {
+        for my $id ( sort keys %{ $mids{$chr}{$pos} } ) {
             $line .= "\t$mids{$chr}{$pos}{$id}";
         }
         say $genotype_fh $line;
