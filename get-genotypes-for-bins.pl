@@ -80,8 +80,9 @@ sub get_bins {
     <$bins_fh>;
     while (<$bins_fh>) {
         chomp;
-        my ( $chr, $start, $end ) = split;
-        my $mid = int( ( $start + $end ) / 2 );
+        my ( $chr, $start, $end, $mid ) = split;
+    	$mid = int( ( $start + $end ) / 2 ) unless defined $mid;
+        next if $mid eq 'NA';
         $bins{$chr}{$mid}{'start'} = $start;
         $bins{$chr}{$mid}{'end'} = $end;
     }
