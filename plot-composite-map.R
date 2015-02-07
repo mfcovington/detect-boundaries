@@ -1,4 +1,7 @@
-PlotCompositeMap <- function(bounds.dir, bins.file, par1="par1", par2="par2", plot.file="composite-map.png") {
+PlotCompositeMap <- function(bounds.dir, bins.file,
+                             par1="par1", par2="par2",
+                             col1="sky blue", colh="black", col2="orange",
+                             plot.file="composite-map.png") {
   library(ggplot2)
   library(reshape)
 
@@ -33,8 +36,8 @@ PlotCompositeMap <- function(bounds.dir, bins.file, par1="par1", par2="par2", pl
     scales = "free_x",
     space = "free_x"
   ) +
-  scale_colour_manual(values = c("green", "black", "magenta")) +
-  scale_fill_manual(values = c("green", "black", "magenta")) +
+  scale_colour_manual(values = c(col2, colh, col1)) +
+  scale_fill_manual(values = c(col2, colh, col1)) +
   theme(
     axis.text = element_blank(),
     panel.grid = element_blank(),
@@ -48,4 +51,4 @@ PlotCompositeMap <- function(bounds.dir, bins.file, par1="par1", par2="par2", pl
 bounds.dir <- "~/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed"
 bins.file <- "/Users/mfc/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed/bin-genotypes.BILs.2014-12-07.imputed-NAs.merged-like"
 
-PlotCompositeMap(bounds.dir, bins.file, par1="M82", par2="PEN")
+PlotCompositeMap(bounds.dir, bins.file, par1="M82", par2="PEN", col1="magenta", col2="green")
