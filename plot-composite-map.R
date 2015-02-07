@@ -1,12 +1,10 @@
-PlotCompositeMap <- function(bounds.dir, bins.file, plot.file="composite-map.png") {
+PlotCompositeMap <- function(bounds.dir, bins.file, par1="par1", par2="par2", plot.file="composite-map.png") {
   library(ggplot2)
   library(reshape)
 
   bins.raw <- read.table(bins.file, header = T, sep = "\t")
 
   bins <- colwise(as.character)(bins.raw)
-  par1 <- "M82"
-  par2 <- "PEN"
   bins[bins == par1] <- 0
   bins[bins == par2] <- 1
   bins[bins == "HET"] <- 1
@@ -50,4 +48,4 @@ PlotCompositeMap <- function(bounds.dir, bins.file, plot.file="composite-map.png
 bounds.dir <- "~/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed"
 bins.file <- "/Users/mfc/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed/bin-genotypes.BILs.2014-12-07.imputed-NAs.merged-like"
 
-PlotCompositeMap(bounds.dir, bins.file)
+PlotCompositeMap(bounds.dir, bins.file, par1="M82", par2="PEN")
