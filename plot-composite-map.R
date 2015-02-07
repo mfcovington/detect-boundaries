@@ -17,6 +17,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file, plot.file="composite-map.png
   bins.sorted <- bins.raw[, c(1:4,order + 4)]
 
   bins.m <- melt(bins.sorted, id = c('chr', 'bin.mid', 'bin.start', 'bin.end'), variable_name = 'BIL')
+  bins.m$value <- factor(bins.m$value, levels = c(par2, "HET", par1))
   bins.m$bil.idx <- as.integer(bins.m$BIL)
 
   qplot(
@@ -34,8 +35,8 @@ PlotCompositeMap <- function(bounds.dir, bins.file, plot.file="composite-map.png
     scales = "free_x",
     space = "free_x"
   ) +
-  scale_colour_manual(values = c("black", "magenta", "green")) +
-  scale_fill_manual(values = c("black", "magenta", "green")) +
+  scale_colour_manual(values = c("green", "black", "magenta")) +
+  scale_fill_manual(values = c("green", "black", "magenta")) +
   theme(
     axis.text = element_blank(),
     panel.grid = element_blank(),
