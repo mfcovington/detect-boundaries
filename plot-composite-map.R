@@ -1,7 +1,8 @@
 PlotCompositeMap <- function(bounds.dir, bins.file,
                              par1="par1", par2="par2",
                              col1="sky blue", colh="black", col2="orange",
-                             plot.file="composite-map.png", ...) {
+                             plot.file="composite-map.png",
+                             ggtitle="Composite Genotype Map", ...) {
   library(ggplot2)
   library(reshape)
 
@@ -42,7 +43,8 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
     panel.grid = element_blank(),
     axis.ticks = element_blank()
   ) +
-  labs(colour = "Genotype", fill = "Genotype")
+  labs(colour = "Genotype", fill = "Genotype") +
+  ggtitle(ggtitle)
 
   ggsave(filename = plot.file, plot = composite.map, ...)
 }
