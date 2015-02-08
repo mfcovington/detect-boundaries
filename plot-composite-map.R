@@ -21,16 +21,15 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   bins.m$value <- factor(bins.m$value, levels = c(par2, "HET", par1))
   bins.m$bil.idx <- as.integer(bins.m$BIL)
 
-  composite.map <- qplot(
+  composite.map <- ggplot(bins.m) +
+  geom_rect(aes(
     xmin = bin.start,
     xmax = bin.end,
     ymin = bil.idx,
     ymax = bil.idx + 1,
     fill = value,
     color = value,
-    data = bins.m,
-    geom = 'rect'
-  ) +
+  )) +
   facet_grid(
     . ~ chr,
     scales = "free_x",
