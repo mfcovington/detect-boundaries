@@ -1,7 +1,7 @@
 PlotCompositeMap <- function(bounds.dir, bins.file,
                              par1="par1", par2="par2",
                              col1="sky blue", colh="black", col2="orange",
-                             plot.file="composite-map.png") {
+                             plot.file="composite-map.png", ...) {
   library(ggplot2)
   library(reshape)
 
@@ -21,7 +21,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   bins.m$value <- factor(bins.m$value, levels = c(par2, "HET", par1))
   bins.m$bil.idx <- as.integer(bins.m$BIL)
 
-  qplot(
+  composite.map <- qplot(
     xmin = bin.start,
     xmax = bin.end,
     ymin = bil.idx,
@@ -45,7 +45,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   ) +
   labs(colour = "Genotype", fill = "Genotype")
 
-  ggsave(plot.file)
+  ggsave(filename = plot.file, plot = composite.map, ...)
 }
 
 bounds.dir <- "~/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed"
