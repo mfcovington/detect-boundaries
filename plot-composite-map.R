@@ -5,17 +5,17 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   library(ggplot2)
   library(reshape)
 
-  bins.raw <- read.table(bins.file, header = T, sep = "\t")
+  bins <- read.table(bins.file, header = T, sep = "\t")
 
-  bins <- colwise(as.character)(bins.raw)
-  bins[bins == par1] <- 0
-  bins[bins == par2] <- 1
-  bins[bins == "HET"] <- 1
+  bins.binary <- colwise(as.character)(bins)
+  bins.binary[bins.binary == par1] <- 0
+  bins.binary[bins.binary == par2] <- 1
+  bins.binary[bins.binary == "HET"] <- 1
 
-  distances <- dist(t(bins[, 5:ncol(bins)]), method = "binary")
+  distances <- dist(t(bins.binary[, 5:ncol(bins.binary)]), method = "binary")
   hc <- hclust(distances)
   order <- hc$order
-  bins.sorted <- bins.raw[, c(1:4,order + 4)]
+  bins.sorted <- bins[, c(1:4,order + 4)]
 
   bins.m <- melt(bins.sorted, id = c('chr', 'bin.mid', 'bin.start', 'bin.end'), variable_name = 'BIL')
   bins.m$value <- factor(bins.m$value, levels = c(par2, "HET", par1))
