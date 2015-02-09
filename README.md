@@ -66,4 +66,4 @@ detect-boundaries:`get-genotypes-for-snp-subset.pl`
 - OUT:
     - `bin-genotype`
 
-
+*Version 0.6.0*
