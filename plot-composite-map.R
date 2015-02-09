@@ -3,6 +3,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
                              col1="sky blue", colh="black", col2="orange",
                              plot.file="composite-map.png",
                              plot=FALSE, save=TRUE,
+                             chr.text.size=7, chr.text.angle=0,
                              ggtitle="Composite Genotype Map", ...) {
   library(ggplot2)
   library(reshape)
@@ -40,6 +41,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   scale_colour_manual(values = c(col2, colh, col1)) +
   scale_fill_manual(values = c(col2, colh, col1)) +
   theme(
+    strip.text.x = element_text(size = chr.text.size, angle = chr.text.angle),
     axis.text = element_blank(),
     panel.grid = element_blank(),
     axis.ticks = element_blank()
