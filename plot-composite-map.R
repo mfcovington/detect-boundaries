@@ -2,6 +2,7 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
                              par1="par1", par2="par2",
                              col1="sky blue", colh="black", col2="orange",
                              plot.file="composite-map.png",
+                             plot=FALSE, save=TRUE,
                              ggtitle="Composite Genotype Map", ...) {
   library(ggplot2)
   library(reshape)
@@ -46,7 +47,11 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
   labs(colour = "Genotype", fill = "Genotype") +
   ggtitle(ggtitle)
 
-  ggsave(filename = plot.file, plot = composite.map, ...)
+  if (plot)
+    print(composite.map)
+
+  if (save)
+    ggsave(filename = plot.file, plot = composite.map, ...)
 }
 
 bounds.dir <- "~/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed"
