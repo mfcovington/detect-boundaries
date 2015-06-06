@@ -105,7 +105,7 @@ for my $chr ( sort keys %snps ) {
     my $last_pos    = 0;
 
     open my $snp_out_fh, ">", "$filtered_snps_dir/$id.$chr.filtered.snps";
-    for my $pos ( sort { $a <=> $b } keys $snps{$chr} ) {
+    for my $pos ( sort { $a <=> $b } keys %{ $snps{$chr} } ) {
         my $score  = $snps{$chr}{$pos}{score};
         my $par_id = $snps{$chr}{$pos}{par_id};
 
