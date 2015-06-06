@@ -307,10 +307,11 @@ sub is_breakpoint_good {
     my ( $redo_sample, $parents, $default_pos, @genotypes ) = @_;
 
     my $yes_no;
+    my $use_default = 0;
     my $input_valid = 0;
     while ( !$input_valid ) {
         print colored ['bold bright_cyan on_black'],
-            "\nDoes this breakpoint look good? (y/n/r/p/x/?) ";
+            "\nDoes this breakpoint look good? (y/n/d/r/p/x/?) ";
         ReadMode 3;
         while ( not defined( $yes_no = ReadKey(-1) ) ) { }
         ReadMode 0;
@@ -320,12 +321,14 @@ sub is_breakpoint_good {
         elsif ( $yes_no =~ /^p$/i )    { take_a_break() }
         elsif ( $yes_no =~ /^x$/i )    { safe_exit() }
         elsif ( $yes_no =~ /^\?$/i )   { help() }
+        elsif ( $yes_no =~ /^d$/i )    { $input_valid++; $use_default = 1 }
     }
     return if $yes_no =~ /^y$/i;
 
     print "\n";
     my %corrected_breakpoints;
-    enter_new_breakpoint( $_, $parents, $default_pos, \%corrected_breakpoints )
+    enter_new_breakpoint( $_, $parents, $default_pos, $use_default,
+        \%corrected_breakpoints )
         for @genotypes;
     return \%corrected_breakpoints;
 }
@@ -346,6 +349,7 @@ sub help {
 
 Y: Yes, breakpoint looks good.
 N: No, breakpoint needs to be adjusted.
+D: No, breakpoint needs to be adjusted. Default to Start/End of chromosome, if applicable.
 R: Make a mistake? Redo the current sample.
 P: Pause analysis. This eliminates unnecessary CPU usage.
 X: Exit.
@@ -356,7 +360,9 @@ EOF
 }
 
 sub enter_new_breakpoint {
-    my ( $genotype, $parents, $default_pos, $corrected_breakpoints ) = @_;
+    my ( $genotype, $parents, $default_pos, $use_default,
+        $corrected_breakpoints )
+        = @_;
 
     my $genotype_response;
     if ( $genotype eq 'NA' ) {
@@ -370,14 +376,19 @@ sub enter_new_breakpoint {
     }
 
     my $position;
-    my $input_valid = 0;
-    while ( !$input_valid ) {
-        print colored ['bold bright_cyan on_black'],
-            "Enter new position for $genotype (leave blank if OK): ";
-        chomp( $position = <STDIN> );
-        $position = $default_pos
-            if defined $default_pos && $position =~ /^d$/i;
-        $input_valid++ if looks_like_number $position || $position eq '';
+    if ( $use_default && defined $default_pos ) {
+        $position = $default_pos;
+    }
+    else {
+        my $input_valid = 0;
+        while ( !$input_valid ) {
+            print colored ['bold bright_cyan on_black'],
+                "Enter new position for $genotype (leave blank if OK): ";
+            chomp( $position = <STDIN> );
+            $position = $default_pos
+                if defined $default_pos && $position =~ /^d$/i;
+            $input_valid++ if looks_like_number $position || $position eq '';
+        }
     }
     $$corrected_breakpoints{$genotype} = $position unless $position eq '';
 }
