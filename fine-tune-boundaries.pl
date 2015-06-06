@@ -266,7 +266,7 @@ sub display_breakpoint {
     elsif ( $new_idx == -1 ) {
         say colored ['bright_white on_red'],
             "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno ";
-        say colored ['bright_white on_blue'],
+        say colored ['bright_blue on_bright_white'],
             "$new_geno\t$new_geno\t$new_geno\t$new_geno\t$new_geno ";
         highlight_zeroes( $$geno_scores{$_} )
             for @$geno_positions[ $old_idx + 1 .. $post ];
@@ -274,7 +274,7 @@ sub display_breakpoint {
     elsif ( $old_idx == -1 ) {
         highlight_zeroes( $$geno_scores{$_} )
             for @$geno_positions[ $new_idx - 9 .. $new_idx - 1 ];
-        say colored ['bright_white on_red'],
+        say colored ['bright_red on_bright_white'],
             "$old_geno\t$old_geno\t$old_geno\t$old_geno\t$old_geno ";
         say colored ['bright_white on_blue'],
             "$$geno_scores{$$geno_positions[$new_idx]}\t$new_geno ";
