@@ -34,7 +34,7 @@ sub safe_exit {
 }
 $SIG{INT} = \&safe_exit;
 
-my $genotyped_dir;
+my ( $genotyped_dir, $seq_list, $par1, $par2 );
 my $context = 10;
 my $out_dir = ".";
 
@@ -42,9 +42,19 @@ my $options = GetOptions(
     "genotyped_dir=s" => \$genotyped_dir,
     "context=i"       => \$context,
     "out_dir=s"       => \$out_dir,
+    "seq_list=s"      => \$seq_list,
+    "par1=s"          => \$par1,
+    "par2=s"          => \$par2,
 );
 
 my @boundaries_files = @ARGV;
+
+my $sequences;
+$sequences = { map { $_ => 1 } split /,/, $seq_list }
+    if defined $seq_list;
+
+my $parents;
+$parents = { '1' => $par1, '2' => $par2, } if defined $par1 && defined $par2;
 
 make_path $out_dir;
 
@@ -57,15 +67,15 @@ SAMPLE: for my $bounds_file (@boundaries_files) {
         "ERROR: Output file ($bounds_out_file) already exists, choose a clean output directory.\n"
         if -e $bounds_out_file;
 
-    my $boundaries = get_boundaries($bounds_file);
-    my $genotypes = get_genotypes( $genotyped_dir, $sample_id );
+    my $boundaries = get_boundaries( $bounds_file, $sequences );
+    my $genotypes = get_genotypes( $genotyped_dir, $sample_id, $sequences );
     compare_chromosome_counts( $boundaries, $genotypes, $sample_id );
 
     my %corrected_boundaries;
     for my $chr ( sort keys %$boundaries ) {
         my $redo_sample = 0;
         $corrected_boundaries{$chr} = analyze_bins_for_chr( $sample_id, $chr, $$boundaries{$chr},
-            $$genotypes{$chr}, \$redo_sample ); #temporary fix for chromosome name mismatch
+            $$genotypes{$chr}, \$redo_sample, $parents ); #temporary fix for chromosome name mismatch
         redo SAMPLE if $redo_sample;
     }
 
@@ -89,21 +99,33 @@ sub get_sample_id {
 }
 
 sub get_boundaries {
-    my $bounds_file = shift;
+    my ( $bounds_file, $sequences ) = @_;
     my %boundaries;
     open my $bounds_fh, "<", $bounds_file;
     while (<$bounds_fh>) {
         chomp;
         my ( $chr, $start, $end, $geno ) = split;
+        if ( defined $sequences ) {
+            next unless exists $$sequences{$chr};
+        }
         push @{ $boundaries{$chr} },
             { 'start' => $start, 'end' => $end, 'geno' => $geno };
     }
     close $bounds_fh;
+
+    if ( defined $sequences ) {
+        for my $chr ( sort keys %$sequences ) {
+            push @{ $boundaries{$chr} },
+                { 'start' => 0, 'end' => 0, 'geno' => 'NA' }
+                unless defined $boundaries{$chr};
+        }
+    }
+
     return \%boundaries;
 }
 
 sub get_genotypes {
-    my ( $genotyped_dir, $sample_id ) = @_;
+    my ( $genotyped_dir, $sample_id, $sequences ) = @_;
     my %genotypes;
     my @genotyped_files = glob "$genotyped_dir/$sample_id.*.genotyped*";
     for my $geno_file (@genotyped_files) {
@@ -111,6 +133,9 @@ sub get_genotypes {
         while ( my $line = <$geno_fh> ) {
             chomp $line;
             my ( $chr, $pos ) = split /\t/, $line;
+            if ( defined $sequences ) {
+                next unless exists $$sequences{$chr};
+            }
             $genotypes{$chr}{$pos} = $line;
         }
         close $geno_fh;
@@ -128,7 +153,7 @@ sub compare_chromosome_counts {
 }
 
 sub analyze_bins_for_chr {
-    my ( $sample_id, $chr, $bins, $geno_scores, $redo_sample ) = @_;
+    my ( $sample_id, $chr, $bins, $geno_scores, $redo_sample, $parents ) = @_;
     my $bin_count = scalar @$bins;
 
     my @geno_positions = sort { $a <=> $b } keys %$geno_scores;
@@ -148,11 +173,13 @@ sub analyze_bins_for_chr {
 
         if ( !defined $previous_start ) {
             $corrected_breakpoints
-                = is_breakpoint_good( $redo_sample, $new_geno );
+                = is_breakpoint_good( $redo_sample, $parents, $new_geno );
+            ($new_geno) = keys %$corrected_breakpoints if $new_geno eq 'NA';
         }
         else {
             $corrected_breakpoints
-                = is_breakpoint_good( $redo_sample, $old_geno, $new_geno );
+                = is_breakpoint_good( $redo_sample, $parents, $old_geno, $new_geno );
+            ($new_geno) = keys %$corrected_breakpoints if $new_geno eq 'NA';
 
             if ( exists $$corrected_breakpoints{$old_geno} ) {
                 $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
@@ -177,7 +204,7 @@ sub analyze_bins_for_chr {
         $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
         $chr );
 
-    $corrected_breakpoints = is_breakpoint_good( $redo_sample, $old_geno );
+    $corrected_breakpoints = is_breakpoint_good( $redo_sample, $parents, $old_geno // 'NA' );
 
     if ( exists $$corrected_breakpoints{$old_geno} ) {
         $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
@@ -193,6 +220,7 @@ sub display_breakpoint {
     my ( $old_geno, $old_pos, $new_geno, $new_pos, $geno_positions,
         $geno_scores, $sample_id, $chr )
         = @_;
+    $old_geno //= 'NA';
 
     print cls();
     print "\n";
@@ -211,11 +239,11 @@ sub display_breakpoint {
             $terminal_merge++;
         }
         else {
-            die $error_msg;
+            die $error_msg unless $new_geno eq 'NA';
         }
     }
     elsif ( $old_pos > $new_pos ) {
-        die $error_msg;
+        die $error_msg unless $new_geno eq 'NA';
     }
 
     my $old_idx = first_index { $_ == $old_pos } @$geno_positions;
@@ -233,6 +261,22 @@ sub display_breakpoint {
         say colored ['bright_white on_magenta'],
             "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno --- $new_geno ";
     }
+    elsif ( $new_idx == -1 ) {
+        say colored ['bright_white on_red'],
+            "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno ";
+        say colored ['bright_white on_blue'],
+            "$new_geno\t$new_geno\t$new_geno\t$new_geno\t$new_geno ";
+        highlight_zeroes( $$geno_scores{$_} )
+            for @$geno_positions[ $old_idx + 1 .. $post ];
+    }
+    elsif ( $old_idx == -1 ) {
+        highlight_zeroes( $$geno_scores{$_} )
+            for @$geno_positions[ $new_idx - 9 .. $new_idx - 1 ];
+        say colored ['bright_white on_red'],
+            "$old_geno\t$old_geno\t$old_geno\t$old_geno\t$old_geno ";
+        say colored ['bright_white on_blue'],
+            "$$geno_scores{$$geno_positions[$new_idx]}\t$new_geno ";
+    }
     else {
         say colored ['bright_white on_red'],
             "$$geno_scores{$$geno_positions[$old_idx]}\t$old_geno ";
@@ -242,7 +286,7 @@ sub display_breakpoint {
             "$$geno_scores{$$geno_positions[$new_idx]}\t$new_geno ";
     }
 
-    if ( $new_idx < $post ) {
+    if ( $new_idx >= 0 && $new_idx < $post ) {
         highlight_zeroes( $$geno_scores{$_} )
             for @$geno_positions[ $new_idx + 1 .. $post ];
     }
@@ -258,7 +302,7 @@ sub highlight_zeroes {
 }
 
 sub is_breakpoint_good {
-    my ( $redo_sample, @genotypes ) = @_;
+    my ( $redo_sample, $parents, @genotypes ) = @_;
 
     my $yes_no;
     my $input_valid = 0;
@@ -279,7 +323,7 @@ sub is_breakpoint_good {
 
     print "\n";
     my %corrected_breakpoints;
-    enter_new_breakpoint( $_, \%corrected_breakpoints ) for @genotypes;
+    enter_new_breakpoint( $_, $parents, \%corrected_breakpoints ) for @genotypes;
     return \%corrected_breakpoints;
 }
 
@@ -309,7 +353,18 @@ EOF
 }
 
 sub enter_new_breakpoint {
-    my ( $genotype, $corrected_breakpoints ) = @_;
+    my ( $genotype, $parents, $corrected_breakpoints ) = @_;
+
+    my $genotype_response;
+    if ( $genotype eq 'NA' ) {
+        print colored ['bold bright_cyan on_black'],
+            "Enter correct genotype (leave blank if OK): ";
+        chomp( $genotype_response = <STDIN> );
+        $genotype = $genotype_response eq '' ? $genotype : $genotype_response;
+
+        $genotype = $$parents{$genotype}
+            if defined $parents && exists $$parents{$genotype};
+    }
 
     my $position;
     my $input_valid = 0;
