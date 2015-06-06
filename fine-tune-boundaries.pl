@@ -173,12 +173,12 @@ sub analyze_bins_for_chr {
 
         if ( !defined $previous_start ) {
             $corrected_breakpoints
-                = is_breakpoint_good( $redo_sample, $parents, $new_geno );
+                = is_breakpoint_good( $redo_sample, $parents, $old_pos, $new_geno );
             ($new_geno) = keys %$corrected_breakpoints if $new_geno eq 'NA';
         }
         else {
             $corrected_breakpoints
-                = is_breakpoint_good( $redo_sample, $parents, $old_geno, $new_geno );
+                = is_breakpoint_good( $redo_sample, $parents, undef, $old_geno, $new_geno );
             ($new_geno) = keys %$corrected_breakpoints if $new_geno eq 'NA';
 
             if ( exists $$corrected_breakpoints{$old_geno} ) {
@@ -204,7 +204,9 @@ sub analyze_bins_for_chr {
         $geno_positions[-1], \@geno_positions, $geno_scores, $sample_id,
         $chr );
 
-    $corrected_breakpoints = is_breakpoint_good( $redo_sample, $parents, $old_geno // 'NA' );
+    $corrected_breakpoints
+        = is_breakpoint_good( $redo_sample, $parents, $geno_positions[-1],
+        $old_geno // 'NA' );
 
     if ( exists $$corrected_breakpoints{$old_geno} ) {
         $corrected_bins{$previous_start}{'end'} = $$corrected_breakpoints{$old_geno};
@@ -302,7 +304,7 @@ sub highlight_zeroes {
 }
 
 sub is_breakpoint_good {
-    my ( $redo_sample, $parents, @genotypes ) = @_;
+    my ( $redo_sample, $parents, $default_pos, @genotypes ) = @_;
 
     my $yes_no;
     my $input_valid = 0;
@@ -323,7 +325,8 @@ sub is_breakpoint_good {
 
     print "\n";
     my %corrected_breakpoints;
-    enter_new_breakpoint( $_, $parents, \%corrected_breakpoints ) for @genotypes;
+    enter_new_breakpoint( $_, $parents, $default_pos, \%corrected_breakpoints )
+        for @genotypes;
     return \%corrected_breakpoints;
 }
 
@@ -353,7 +356,7 @@ EOF
 }
 
 sub enter_new_breakpoint {
-    my ( $genotype, $parents, $corrected_breakpoints ) = @_;
+    my ( $genotype, $parents, $default_pos, $corrected_breakpoints ) = @_;
 
     my $genotype_response;
     if ( $genotype eq 'NA' ) {
@@ -372,6 +375,8 @@ sub enter_new_breakpoint {
         print colored ['bold bright_cyan on_black'],
             "Enter new position for $genotype (leave blank if OK): ";
         chomp( $position = <STDIN> );
+        $position = $default_pos
+            if defined $default_pos && $position =~ /^d$/i;
         $input_valid++ if looks_like_number $position || $position eq '';
     }
     $$corrected_breakpoints{$genotype} = $position unless $position eq '';
