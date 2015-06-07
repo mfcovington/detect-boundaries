@@ -81,7 +81,7 @@ for my $chr (@chromosomes) {
     for my $start ( sort { $a <=> $b } keys %{ $borders{$chr} } ) {
         push @lengths, $borders{$chr}->{$start} - $start + 1;
     }
-    summarize_ranges( $chr, \@lengths );
+    summarize_ranges( $chr, \@lengths ) if scalar @lengths;
 }
 
 say "BIN SIZES:";
@@ -94,7 +94,7 @@ for my $chr (@chromosomes) {
         push @lengths, $end - $start + 1;
         say $bin_fh join "\t", $chr, $start, $end;
     }
-    summarize_ranges( $chr, \@lengths );
+    summarize_ranges( $chr, \@lengths ) if scalar @lengths;
 }
 close $bin_fh;
 
