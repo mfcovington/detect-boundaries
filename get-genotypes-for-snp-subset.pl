@@ -14,6 +14,9 @@ use File::Path 'make_path';
 use Getopt::Long;
 use List::Util qw(min max);
 
+# TODO: Don't use defaults for $par1_id, $par2_id, and $chr_list
+# TODO: Don't hard code @ids
+
 my $par1_id   = "R500";
 my $par2_id   = "IMB211";
 
