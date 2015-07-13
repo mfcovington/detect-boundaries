@@ -35,7 +35,7 @@ my $options = GetOptions(
     "chr_list=s"   => \$chr_list,
     "out_dir=s"    => \$out_dir,
     "bins_file=s"  => \$bins_file,
-    "no_nr" 	   => \$no_nr,
+    "no_nr"        => \$no_nr,
 );
 my $het_max = min( $min_ratio, 0.5 + $het_offset );
 
