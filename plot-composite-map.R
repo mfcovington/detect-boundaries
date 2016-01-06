@@ -19,19 +19,20 @@ PlotCompositeMap <- function(bins.file,
   distances <- dist(t(bins.binary[, 5:ncol(bins.binary)]), method = "binary")
   hc <- hclust(distances)
   order <- hc$order
-  bins.sorted <- bins[, c(1:4, order + 4)]
+  samples.sorted <- bins[, c(1:4, order + 4)]
 
-  bins.m <- melt(bins.sorted, id = c("chr", "bin.mid", "bin.start", "bin.end"),
-                 variable_name = "BIL")
+  bins.m <- melt(samples.sorted,
+                 id = c("chr", "bin.mid", "bin.start", "bin.end"),
+                 variable_name = "sample")
   bins.m$value <- factor(bins.m$value, levels = c(par2, "HET", par1))
-  bins.m$bil.idx <- as.integer(bins.m$BIL)
+  bins.m$sample.idx <- as.integer(bins.m$sample)
 
   composite.map <- ggplot(bins.m) +
     geom_rect(aes(
       xmin = bin.start,
       xmax = bin.end,
-      ymin = bil.idx,
-      ymax = bil.idx + 1,
+      ymin = sample.idx,
+      ymax = sample.idx + 1,
       fill = value,
       color = value
     )) +
