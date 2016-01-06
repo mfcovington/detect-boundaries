@@ -1,4 +1,4 @@
-PlotCompositeMap <- function(bounds.dir, bins.file,
+PlotCompositeMap <- function(bins.file,
                              par1="par1", par2="par2",
                              col1="sky blue", colh="black", col2="orange",
                              plot.file="composite-map.png",
@@ -56,7 +56,6 @@ PlotCompositeMap <- function(bounds.dir, bins.file,
     ggsave(filename = plot.file, plot = composite.map, ...)
 }
 
-bounds.dir <- "~/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed"
 bins.file <- "/Users/mfc/Dropbox/lab/tomato/bils/re-seq/hmm-results/boundaries-fixed/bin-genotypes.BILs.2014-12-07.imputed-NAs.merged-like"
 
-PlotCompositeMap(bounds.dir, bins.file, par1="M82", par2="PEN", col1="magenta", col2="green")
+PlotCompositeMap(bins.file, par1="M82", par2="PEN", col1="magenta", col2="green")
