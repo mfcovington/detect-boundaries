@@ -6,6 +6,7 @@ PlotCompositeMap <- function(bins.file,
                              chr.text.size=7, chr.text.angle=0,
                              ggtitle="Composite Genotype Map", ...) {
   library(ggplot2)
+  library(plyr)
   library(reshape)
 
   bins <- read.table(bins.file, header = T, sep = "\t")
