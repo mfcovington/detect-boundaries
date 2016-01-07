@@ -67,13 +67,7 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
     )) +
     scale_colour_manual(values = c(col2, colh, col1)) +
     scale_fill_manual(values = c(col2, colh, col1)) +
-    theme(
-      strip.text.x = element_text(
-        size = chr.text.size,
-        angle = chr.text.angle
-      ),
-      panel.grid = element_blank()
-    ) +
+    theme(panel.grid = element_blank()) +
     labs(colour = "Genotype", fill = "Genotype") +
     xlab(x.axis.label) +
     ggtitle(ggtitle)
@@ -82,6 +76,10 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
     composite.map <- composite.map +
       facet_grid(chr ~ ., scales = "free_y", space = "free_y") +
       theme(
+        strip.text.y = element_text(
+          size = chr.text.size,
+          angle = chr.text.angle
+        ),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()
       )
@@ -104,6 +102,10 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
     composite.map <- composite.map +
       facet_grid(. ~ chr, scales = "free_x", space = "free_x") +
       theme(
+        strip.text.x = element_text(
+          size = chr.text.size,
+          angle = chr.text.angle
+        ),
         axis.text = element_blank(),
         axis.ticks = element_blank()
       )
