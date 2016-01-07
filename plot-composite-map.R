@@ -72,9 +72,7 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
         size = chr.text.size,
         angle = chr.text.angle
       ),
-      axis.text = element_blank(),
-      panel.grid = element_blank(),
-      axis.ticks = element_blank()
+      panel.grid = element_blank()
     ) +
     labs(colour = "Genotype", fill = "Genotype") +
     xlab(x.axis.label) +
@@ -82,10 +80,33 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
 
   if (stacked.chromosomes) {
     composite.map <- composite.map +
-      facet_grid(chr ~ ., scales = "free_y", space = "free_y")
+      facet_grid(chr ~ ., scales = "free_y", space = "free_y") +
+      theme(
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()
+      )
+
+    # Add x-axis break points with 10 Mb intervals
+    if (!genetic.distance) {
+      max_pos  <- max(bin.genotypes.melted$bin.end)
+      temp_max <- floor(max_pos / 10000000)
+      max_pos_fixed <- temp_max * 10000000
+      label_max <- temp_max * 10
+
+      composite.map <- composite.map +
+        scale_x_continuous(
+          breaks = seq(0, max_pos_fixed, 10000000),
+          labels = seq(0, label_max, 10)
+        )
+    }
+
   } else {
     composite.map <- composite.map +
-      facet_grid(. ~ chr, scales = "free_x", space = "free_x")
+      facet_grid(. ~ chr, scales = "free_x", space = "free_x") +
+      theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+      )
   }
 
   if (plot)
