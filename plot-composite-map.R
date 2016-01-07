@@ -93,8 +93,10 @@ bins.genetic.m <- ClusterAndMeltBinGenotypes(bins.genetic, order,
                                               par1 = par1, par2 = par2)
 
 PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
-  col2 = "green", plot.file = "plots/composite-map.physical.png", save = TRUE,
-  plot=FALSE, chr.text.size = 12, width = 10, height = 7.5)
+                 col2 = "green", plot.file = "plots/composite-map.physical.png",
+                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
+                 height = 7.5)
 PlotCompositeMap(bins.genetic.m, par1 = par1, par2 = par2, col1 = "magenta",
-  col2 = "green", plot.file = "plots/composite-map.genetic.png", save = TRUE,
-  plot=FALSE, chr.text.size = 12, width = 10, height = 7.5)
+                 col2 = "green", plot.file = "plots/composite-map.genetic.png",
+                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
+                 height = 7.5)
