@@ -41,6 +41,7 @@ SubsetByChrAndHasIntrogression <- function(bin.genotypes, chromosome) {
 
 
 PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
+                             genetic.distance = FALSE,
                              par1 = "par1", par2 = "par2",
                              col1 = "sky blue", colh = "black", col2 = "orange",
                              plot.file = "composite-map.png",
@@ -48,6 +49,12 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
                              chr.text.size = 7, chr.text.angle = 0,
                              ggtitle = "Composite Genotype Map", ...) {
   library(ggplot2)
+
+  if (genetic.distance) {
+    x.axis.label <- "Position on chromosome (cM)"
+  } else {
+    x.axis.label <- "Position on chromosome (Mb)"
+  }
 
   composite.map <- ggplot(bin.genotypes.melted) +
     geom_rect(aes(
@@ -70,6 +77,7 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
       axis.ticks = element_blank()
     ) +
     labs(colour = "Genotype", fill = "Genotype") +
+    xlab(x.axis.label) +
     ggtitle(ggtitle)
 
   if (stacked.chromosomes) {
@@ -116,7 +124,7 @@ PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
 PlotCompositeMap(bins.genetic.m, par1 = par1, par2 = par2, col1 = "magenta",
                  col2 = "green", plot.file = "plots/composite-map.genetic.png",
                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
-                 height = 7.5)
+                 height = 7.5, genetic.distance = TRUE)
 
 
 # Cluster by chromosome after removing samples without an introgression
@@ -148,4 +156,4 @@ PlotCompositeMap(bins.genetic.m, stacked.chromosomes = TRUE,
                  par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
                  plot.file = "plots/composite-map.genetic.cluster-by-chr.png",
                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
-                 height = 10)
+                 height = 10, genetic.distance = TRUE)
