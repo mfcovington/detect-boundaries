@@ -81,6 +81,8 @@ bins.genetic.file <- "data/gen.bins.info.RDS"
 bins.physical <- read.table(bins.physical.file, header = T, sep = "\t")
 bins.genetic <- readRDS(bins.genetic.file)
 
+bins.physical$chr <- bins.genetic$chr
+
 par1 <- "M82"
 par2 <- "PEN"
 
