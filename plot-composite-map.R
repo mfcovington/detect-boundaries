@@ -38,7 +38,7 @@ PlotCompositeMap <- function(bin.genotypes,
                              par1 = "par1", par2 = "par2",
                              col1 = "sky blue", colh = "black", col2 = "orange",
                              plot.file = "composite-map.png",
-                             plot = FALSE, save = TRUE,
+                             plot = TRUE, save = FALSE,
                              chr.text.size = 7, chr.text.angle = 0,
                              ggtitle = "Composite Genotype Map", ...) {
   library(ggplot2)
