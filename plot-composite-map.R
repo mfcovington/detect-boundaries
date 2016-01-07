@@ -107,7 +107,7 @@ order <- GetOrderOfSamplesClusteredByGenotype(bins.physical,
 bins.physical.m <- ClusterAndMeltBinGenotypes(bins.physical, order,
                                               par1 = par1, par2 = par2)
 bins.genetic.m <- ClusterAndMeltBinGenotypes(bins.genetic, order,
-                                              par1 = par1, par2 = par2)
+                                             par1 = par1, par2 = par2)
 
 PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
                  col2 = "green", plot.file = "plots/composite-map.physical.png",
@@ -139,11 +139,13 @@ for (chromosome in unique(bins.physical$chr)) {
   bins.genetic.m <- rbind(bins.genetic.m, bins.genetic.chr.m)
 }
 
-PlotCompositeMap(bins.physical.m, stacked.chromosomes = TRUE, par1 = par1, par2 = par2, col1 = "magenta",
-                 col2 = "green", plot.file = "plots/composite-map.physical.cluster-by-chr.png",
+PlotCompositeMap(bins.physical.m, stacked.chromosomes = TRUE,
+                 par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
+                 plot.file = "plots/composite-map.physical.cluster-by-chr.png",
                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
                  height = 10)
-PlotCompositeMap(bins.genetic.m, stacked.chromosomes = TRUE, par1 = par1, par2 = par2, col1 = "magenta",
-                 col2 = "green", plot.file = "plots/composite-map.genetic.cluster-by-chr.png",
+PlotCompositeMap(bins.genetic.m, stacked.chromosomes = TRUE,
+                 par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
+                 plot.file = "plots/composite-map.genetic.cluster-by-chr.png",
                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
                  height = 10)
