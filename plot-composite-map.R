@@ -1,40 +1,38 @@
-ClusterSamplesByGenotype <- function(bins.physical, bins.genetic,
-                                     par1 = "par1", par2 = "par2") {
+GetOrderOfSamplesClusteredByGenotype <- function(bin.genotypes,
+                                       par1 = "par1", par2 = "par2") {
   library(plyr)
-  library(reshape)
 
-  bins.binary <- colwise(as.character)(bins.physical)
+  bins.binary <- colwise(as.character)(bin.genotypes)
   bins.binary[bins.binary == par1] <- 0
   bins.binary[bins.binary == par2] <- 1
   bins.binary[bins.binary == "HET"] <- 1
 
   distances <- dist(t(bins.binary[, 5:ncol(bins.binary)]), method = "binary")
   hc <- hclust(distances)
-  order <- hc$order
-  samples.sorted <- bins.physical[, c(1:4, order + 4)]
+  clustered.sample.order <- hc$order
 
-  bins.physical.m <- melt(samples.sorted,
-                          id = c("chr", "bin.mid", "bin.start", "bin.end"),
-                          variable_name = "sample")
-  bins.physical.m$value <- factor(bins.physical.m$value,
-                                  levels = c(par2, "HET", par1))
-  bins.physical.m$sample.idx <- as.integer(bins.physical.m$sample)
-
-  bins.genetic.sorted <- cbind(bins.genetic[, 1:4],
-                               samples.sorted[, 5:ncol(samples.sorted)])
-  bins.genetic.m <- melt(bins.genetic.sorted,
-                         id = c("chr", "bin.mid", "bin.start", "bin.end"),
-                         variable_name = "sample")
-  bins.genetic.m$value <- factor(bins.genetic.m$value,
-                                 levels = c(par2, "HET", par1))
-  bins.genetic.m$sample.idx <- as.integer(bins.genetic.m$sample)
-
-  bins.physical.m <<- bins.physical.m
-  bins.genetic.m <<- bins.genetic.m
+  clustered.sample.order
 }
 
 
-PlotCompositeMap <- function(bin.genotypes,
+ClusterAndMeltBinGenotypes <- function(bin.genotypes, order,
+                                       par1 = "par1", par2 = "par2") {
+  library(reshape)
+
+  samples.sorted <- bin.genotypes[, c(1:4, order + 4)]
+
+  bin.genotypes.m <- melt(samples.sorted,
+                          id = c("chr", "bin.mid", "bin.start", "bin.end"),
+                          variable_name = "sample")
+  bin.genotypes.m$value <- factor(bin.genotypes.m$value,
+                                  levels = c(par2, "HET", par1))
+  bin.genotypes.m$sample.idx <- as.integer(bin.genotypes.m$sample)
+
+  bin.genotypes.m
+}
+
+
+PlotCompositeMap <- function(bin.genotypes.melted,
                              par1 = "par1", par2 = "par2",
                              col1 = "sky blue", colh = "black", col2 = "orange",
                              plot.file = "composite-map.png",
@@ -43,7 +41,7 @@ PlotCompositeMap <- function(bin.genotypes,
                              ggtitle = "Composite Genotype Map", ...) {
   library(ggplot2)
 
-  composite.map <- ggplot(bin.genotypes) +
+  composite.map <- ggplot(bin.genotypes.melted) +
     geom_rect(aes(
       xmin = bin.start,
       xmax = bin.end,
@@ -86,7 +84,13 @@ bins.genetic <- readRDS(bins.genetic.file)
 par1 <- "M82"
 par2 <- "PEN"
 
-ClusterSamplesByGenotype(bins.physical, bins.genetic, par1 = par1, par2 = par2)
+order <- GetOrderOfSamplesClusteredByGenotype(bins.physical,
+                                              par1 = par1, par2 = par2)
+
+bins.physical.m <- ClusterAndMeltBinGenotypes(bins.physical, order,
+                                              par1 = par1, par2 = par2)
+bins.genetic.m <- ClusterAndMeltBinGenotypes(bins.genetic, order,
+                                              par1 = par1, par2 = par2)
 
 PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
   col2 = "green", plot.file = "plots/composite-map.physical.png", save = TRUE,
