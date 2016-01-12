@@ -46,7 +46,7 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
                              col1 = "sky blue", colh = "black", col2 = "orange",
                              plot.file = "composite-map.png",
                              plot = TRUE, save = FALSE,
-                             chr.text.size = 7, chr.text.angle = 0,
+                             chr.text.size = 7, chr.text.angle = 'default',
                              ggtitle = "Composite Genotype Map", ...) {
   library(ggplot2)
 
@@ -54,6 +54,10 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
     x.axis.label <- "Position on chromosome (cM)"
   } else {
     x.axis.label <- "Position on chromosome (Mb)"
+  }
+
+  if(chr.text.angle == 'default') {
+    chr.text.angle <- ifelse(stacked.chromosomes, 270, 0)
   }
 
   composite.map <- ggplot(bin.genotypes.melted) +
