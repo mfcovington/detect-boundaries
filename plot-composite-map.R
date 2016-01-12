@@ -119,64 +119,68 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
 }
 
 
-setwd("/Users/mfc/tomato/dan/bil-composite-plot-genetic-distance/")
+###########################################################
+# EXAMPLE OF USING THESE FUNCTIONS TO PLOT COMPOSITE MAPS #
+###########################################################
 
-bins.physical.file <- "data/bin-genotypes.BILs.2014-12-07.imputed-NAs.merged-like"
-bins.genetic.file <- "data/gen.bins.info.RDS"
+# setwd("/Users/mfc/tomato/dan/bil-composite-plot-genetic-distance/")
 
-bins.physical <- read.table(bins.physical.file, header = T, sep = "\t")
-bins.genetic <- readRDS(bins.genetic.file)
+# bins.physical.file <- "data/bin-genotypes.BILs.2014-12-07.imputed-NAs.merged-like"
+# bins.genetic.file <- "data/gen.bins.info.RDS"
 
-bins.physical$chr <- bins.genetic$chr
+# bins.physical <- read.table(bins.physical.file, header = T, sep = "\t")
+# bins.genetic <- readRDS(bins.genetic.file)
 
-par1 <- "M82"
-par2 <- "PEN"
+# bins.physical$chr <- bins.genetic$chr
 
-order <- GetOrderOfSamplesClusteredByGenotype(bins.physical,
-                                              par1 = par1, par2 = par2)
+# par1 <- "M82"
+# par2 <- "PEN"
 
-bins.physical.m <- ClusterAndMeltBinGenotypes(bins.physical, order,
-                                              par1 = par1, par2 = par2)
-bins.genetic.m <- ClusterAndMeltBinGenotypes(bins.genetic, order,
-                                             par1 = par1, par2 = par2)
+# order <- GetOrderOfSamplesClusteredByGenotype(bins.physical,
+#                                               par1 = par1, par2 = par2)
 
-PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
-                 col2 = "green", plot.file = "plots/composite-map.physical.png",
-                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
-                 height = 7.5)
-PlotCompositeMap(bins.genetic.m, par1 = par1, par2 = par2, col1 = "magenta",
-                 col2 = "green", plot.file = "plots/composite-map.genetic.png",
-                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
-                 height = 7.5, genetic.distance = TRUE)
+# bins.physical.m <- ClusterAndMeltBinGenotypes(bins.physical, order,
+#                                               par1 = par1, par2 = par2)
+# bins.genetic.m <- ClusterAndMeltBinGenotypes(bins.genetic, order,
+#                                              par1 = par1, par2 = par2)
+
+# PlotCompositeMap(bins.physical.m, par1 = par1, par2 = par2, col1 = "magenta",
+#                  col2 = "green", plot.file = "plots/composite-map.physical.png",
+#                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
+#                  height = 7.5)
+# PlotCompositeMap(bins.genetic.m, par1 = par1, par2 = par2, col1 = "magenta",
+#                  col2 = "green", plot.file = "plots/composite-map.genetic.png",
+#                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 10,
+#                  height = 7.5, genetic.distance = TRUE)
 
 
-# Cluster by chromosome after removing samples without an introgression
-bins.physical.m <- data.frame()
-bins.genetic.m <- data.frame()
+# # Cluster by chromosome after removing samples without an introgression
+# bins.physical.m <- data.frame()
+# bins.genetic.m <- data.frame()
 
-for (chromosome in unique(bins.physical$chr)) {
-  bins.physical.chr <- SubsetByChrAndHasIntrogression(bins.physical, chromosome)
-  bins.genetic.chr <- SubsetByChrAndHasIntrogression(bins.genetic, chromosome)
+# for (chromosome in unique(bins.physical$chr)) {
+#   bins.physical.chr <- SubsetByChrAndHasIntrogression(bins.physical, chromosome)
+#   bins.genetic.chr <- SubsetByChrAndHasIntrogression(bins.genetic, chromosome)
 
-  order <- GetOrderOfSamplesClusteredByGenotype(bins.physical.chr,
-                                                par1 = par1, par2 = par2)
+#   order <- GetOrderOfSamplesClusteredByGenotype(bins.physical.chr,
+#                                                 par1 = par1, par2 = par2)
 
-  bins.physical.chr.m <- ClusterAndMeltBinGenotypes(bins.physical.chr, order,
-                                                    par1 = par1, par2 = par2)
-  bins.genetic.chr.m <- ClusterAndMeltBinGenotypes(bins.genetic.chr, order,
-                                                   par1 = par1, par2 = par2)
+#   bins.physical.chr.m <- ClusterAndMeltBinGenotypes(bins.physical.chr, order,
+#                                                     par1 = par1, par2 = par2)
+#   bins.genetic.chr.m <- ClusterAndMeltBinGenotypes(bins.genetic.chr, order,
+#                                                    par1 = par1, par2 = par2)
 
-  bins.physical.m <- rbind(bins.physical.m, bins.physical.chr.m)
-  bins.genetic.m <- rbind(bins.genetic.m, bins.genetic.chr.m)
-}
+#   bins.physical.m <- rbind(bins.physical.m, bins.physical.chr.m)
+#   bins.genetic.m <- rbind(bins.genetic.m, bins.genetic.chr.m)
+# }
 
-PlotCompositeMap(bins.physical.m, stacked.chromosomes = TRUE,
-                 par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
-                 plot.file = "plots/composite-map.physical.cluster-by-chr.png",
-                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
-                 height = 10)
-PlotCompositeMap(bins.genetic.m, stacked.chromosomes = TRUE,
-                 par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
-                 plot.file = "plots/composite-map.genetic.cluster-by-chr.png",
-                 save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
-                 height = 10, genetic.distance = TRUE)
+# PlotCompositeMap(bins.physical.m, stacked.chromosomes = TRUE,
+#                  par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
+#                  plot.file = "plots/composite-map.physical.cluster-by-chr.png",
+#                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
+#                  height = 10)
+# PlotCompositeMap(bins.genetic.m, stacked.chromosomes = TRUE,
+#                  par1 = par1, par2 = par2, col1 = "magenta", col2 = "green",
+#                  plot.file = "plots/composite-map.genetic.cluster-by-chr.png",
+#                  save = TRUE, plot=FALSE, chr.text.size = 12, width = 7.5,
+#                  height = 10, genetic.distance = TRUE)
