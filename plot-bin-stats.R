@@ -101,6 +101,27 @@ PlotPercentIntrogressed <- function(
 }
 
 
+PlotBinsPerChromosome <- function(
+      bin.geno.df, border.color = "black", fill.color = "skyblue",
+      plot.file = "bins-per-chromosome.png", plot = TRUE, save = FALSE,
+      ggtitle = "Bins per Chromosome", ...) {
+
+  library(ggplot2)
+
+  bins.per.chr <- ggplot(bin.geno.df, aes(x = chr)) +
+    geom_bar(color = border.color, fill = fill.color) +
+    ggtitle(ggtitle) +
+    xlab("Chromosome") +
+    ylab("Number of unique bins")
+
+  if (plot)
+    print(bins.per.chr)
+
+  if (save)
+    ggsave(filename = plot.file, plot = bins.per.chr, ...)
+}
+
+
 PlotDistributionOfIntrogressions <- function(
       bin.geno.df, genetic.distance = FALSE,
       par1 = "par1", par2 = "par2",
