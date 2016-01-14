@@ -51,9 +51,9 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
   library(ggplot2)
 
   if (genetic.distance) {
-    x.axis.label <- "Position on chromosome (cM)"
+    x.axis.label <- "Position on Chromosome (cM)"
   } else {
-    x.axis.label <- "Position on chromosome (Mb)"
+    x.axis.label <- "Position on Chromosome (Mb)"
   }
 
   if(chr.text.angle == 'default') {

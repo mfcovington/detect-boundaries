@@ -46,7 +46,8 @@ CountAndMeasureIntrogressions <- function(boundaries.dir,
 
 PlotIntrogressionsPerSample <- function (
       counts.df, border.color = "black", fill.color = "skyblue",
-      xlab = "# of introgressions per sample", ylab = "# of Samples",
+      ggtitle = "Introgression Frequency per Sample",
+      xlab = "Number of Introgressions", ylab = "Number of Samples",
       plot.file = "introgressions-per-sample.png",
       plot = TRUE, save = FALSE, ...) {
 
@@ -63,6 +64,7 @@ PlotIntrogressionsPerSample <- function (
                    color = border.color,
                    fill = fill.color) +
     xlim(0, max.count.introgression.combined + 0.5) +
+    ggtitle(ggtitle) +
     xlab(xlab) +
     ylab(ylab)
 
@@ -76,7 +78,9 @@ PlotIntrogressionsPerSample <- function (
 
 PlotPercentIntrogressed <- function(
       counts.df, border.color = "black", fill.color = "skyblue",
-      xlab = "% of introgressed genotype in genome", ylab = "# of Samples",
+      ggtitle = "Introgression Proportion per Sample",
+      xlab = "Percent of Introgressed Genotype in Genome",
+      ylab = "Number of Samples",
       plot.file = "percent-introgressed.png",
       plot = TRUE, save = FALSE, ...) {
 
@@ -89,6 +93,7 @@ PlotPercentIntrogressed <- function(
                    binwidth = 0.15,
                    color = border.color,
                    fill = fill.color) +
+    ggtitle(ggtitle) +
     xlab(xlab) +
     ylab(ylab) +
     scale_x_log10()
@@ -112,7 +117,7 @@ PlotBinsPerChromosome <- function(
     geom_bar(color = border.color, fill = fill.color) +
     ggtitle(ggtitle) +
     xlab("Chromosome") +
-    ylab("Number of unique bins")
+    ylab("Number of Unique Bins")
 
   if (plot)
     print(bins.per.chr)
@@ -129,7 +134,8 @@ PlotDistributionOfIntrogressions <- function(
       plot.file = "distribution-of-introgressions.png",
       plot = TRUE, save = FALSE,
       chr.text.size = 12, chr.text.angle = 270,
-      ggtitle = "Distribution of Introgressions Across Bins", ...) {
+      ggtitle = "Distribution of Introgressions Across Bins",
+      ylab = "Number of Samples with Introgression", ...) {
 
   library(ggplot2)
 
@@ -160,7 +166,7 @@ PlotDistributionOfIntrogressions <- function(
     ) +
     ggtitle(ggtitle) +
     scale_y_continuous(
-      '# of BILs with introgression',
+      ylab,
       breaks = c(0, max_lab / 2, max_lab),
       labels = c(0, max_lab / 2, max_lab),
       limits = c(0, offset * max_count)
@@ -173,11 +179,11 @@ PlotDistributionOfIntrogressions <- function(
     )
 
   if (genetic.distance) {
-    distribution <- distribution + xlab('Bin position on chromosome (cM)')
+    distribution <- distribution + xlab('Bin Position on Chromosome (cM)')
   } else {
     distribution <- distribution +
       scale_x_continuous(
-        'Bin position on chromosome (Mb)',
+        'Bin Position on Chromosome (Mb)',
         breaks = seq(0, max_pos_fixed, 10000000),
         labels = seq(0, label_max,     10)
       )
