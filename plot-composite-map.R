@@ -115,11 +115,11 @@ PlotCompositeMap <- function(bin.genotypes.melted, stacked.chromosomes = FALSE,
       )
   }
 
-  if (plot)
-    print(composite.map)
-
   if (save)
     ggsave(filename = plot.file, plot = composite.map, ...)
+
+  if (plot)
+    composite.map
 }
 
 

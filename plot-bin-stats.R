@@ -68,11 +68,11 @@ PlotIntrogressionsPerSample <- function (
     xlab(xlab) +
     ylab(ylab)
 
-  if (plot)
-    print(introgression.histogram)
-
   if (save)
     ggsave(filename = plot.file, plot = introgression.histogram, ...)
+
+  if (plot)
+    introgression.histogram
 }
 
 
@@ -98,11 +98,11 @@ PlotPercentIntrogressed <- function(
     ylab(ylab) +
     scale_x_log10()
 
-  if (plot)
-    print(introgression.histogram)
-
   if (save)
     ggsave(filename = plot.file, plot = introgression.histogram, ...)
+
+  if (plot)
+    introgression.histogram
 }
 
 
@@ -119,11 +119,11 @@ PlotBinsPerChromosome <- function(
     xlab("Chromosome") +
     ylab("Number of Unique Bins")
 
-  if (plot)
-    print(bins.per.chr)
-
   if (save)
     ggsave(filename = plot.file, plot = bins.per.chr, ...)
+
+  if (plot)
+    bins.per.chr
 }
 
 
@@ -189,9 +189,9 @@ PlotDistributionOfIntrogressions <- function(
       )
   }
 
-  if (plot)
-    print(distribution)
-
   if (save)
     ggsave(filename = plot.file, plot = distribution, ...)
+
+  if (plot)
+    distribution
 }
