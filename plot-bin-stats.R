@@ -2,6 +2,8 @@ CountAndMeasureIntrogressions <- function(boundaries.dir,
                                           par1 = "par1", par2 = "par2") {
   # Accumulate counts and lengths data for introgressions
 
+  library(plyr)
+
   counts.df <- data.frame(id = character(),
                           par1 = integer(),
                           het = integer(),
